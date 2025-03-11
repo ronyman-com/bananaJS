@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/styles/banana.css"> <!-- Correct path -->
+  <title>Banana.js Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .metric {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Banana.js Dashboard</h1>
+  <div class="metric">
+    <strong>Memory Usage:</strong> <span id="memory">0</span> MB
+  </div>
+  <div class="metric">
+    <strong>CPU Usage:</strong> <span id="cpu">0</span> ms
+  </div>
+
+  <script>
+    const ws = new WebSocket('ws://localhost:8080');
+
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+
+      if (message.type === 'metrics') {
+        document.getElementById('memory').textContent = message.data.memory.toFixed(2);
+        document.getElementById('cpu').textContent = message.data.cpu.toFixed(2);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+  </script>
+</body>
+</html>

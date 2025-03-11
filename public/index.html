@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banana.js App</title>
+  <link rel="stylesheet" href="/styles/banana.css"> <!-- Correct path -->
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+  <div id="app" class="min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <nav class="bg-blue-600 text-white p-4 dark:bg-gray-800">
+      <div class="container mx-auto flex justify-between items-center">
+        <div class="flex items-center">
+          <img src="/bananajs_logo.jpg" alt="Banana.js Logo" class="h-8 mr-2" /> <!-- Correct path -->
+          <span class="text-2xl font-bold">Banana.js</span>
+        </div>
+        <div class="flex items-center space-x-4">
+          <button class="p-2 rounded-full hover:bg-blue-500 dark:hover:bg-gray-700">
+            🌙
+          </button>
+          <a
+            href="https://github.com/your-repo/banana.js"
+            target="_blank"
+            class="flex items-center space-x-1 hover:underline"
+          >
+            <img src="/github-icon.svg" alt="GitHub" class="h-6" /> <!-- Correct path -->
+            <span>12k</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="flex-1 flex items-center justify-center">
+      <div class="text-center">
+        <h1 class="text-6xl font-bold mb-4">Welcome to Banana.js</h1>
+        <p class="text-xl mb-8">
+          A modern, fast, and lightweight JavaScript framework for building web applications.
+        </p>
+        <div class="space-x-4">
+          <a
+            href="/getting-started"
+            class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+          >
+            Get Started
+          </a>
+          <a
+            href="/features"
+            class="bg-gray-200 text-gray-900 px-6 py-3 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100"
+          >
+            Explore Features
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white p-6 dark:bg-gray-900">
+      <div class="container mx-auto text-center">
+        <p>&copy; 2023 Banana.js. All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+  <script type="module" src="/main.js"></script> <!-- Correct path -->
+</body>
+</html>

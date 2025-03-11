@@ -1,0 +1,15 @@
+{
+  "name": "banana-vue-project",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "banana dev",
+    "build": "banana build"
+  },
+  "dependencies": {
+    "banana.js": "^1.0.0",
+    "vue": "^3.0.0",
+    "sass": "^1.32.0",
+    "typescript": "^5.0.0",
+    "esbuild": "^0.15.0"
+  }
+}

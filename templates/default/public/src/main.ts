@@ -1,0 +1,1 @@
+console.log('Hello from Banana.js with TypeScript!');

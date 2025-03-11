@@ -1,0 +1,38 @@
+{
+  "name": "banana",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node server.js --port 5000",
+    "build": "node build.js",
+    "build:css": "tailwindcss build public/styles/main.css -o public/styles/banana.css",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "chokidar": "^4.0.3",
+    "commander": "^13.1.0",
+    "esbuild": "^0.25.0",
+    "express": "^4.21.2",
+    "fs-extra": "^11.3.0",
+    "postcss-modules": "^6.0.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sass": "^1.85.1",
+    "typescript": "^5.8.2",
+    "vue": "^3.5.13"
+  },
+  "bin": {
+    "banana": "./cli.js"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17"
+  }
+}
