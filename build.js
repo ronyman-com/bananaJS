@@ -1,3 +1,4 @@
+// build.js
 const esbuild = require('esbuild');
 const config = require('./banana.config.js');
 
@@ -8,21 +9,24 @@ esbuild.build({
   sourcemap: config.esbuild.sourcemap,
   outfile: `${config.outDir}/bundle.js`,
   loader: {
-    '.js': 'jsx', // Handle JavaScript files
-    '.jsx': 'jsx', // Handle JSX files
-    '.css': 'css', // Handle CSS files
-    '.html': 'text', // Handle HTML files as raw text
-    '.png': 'file', // Handle image files
+    '.ts': 'ts',
+    '.jsx': 'jsx',
+    '.vue': 'file',
+    '.scss': 'css',
+    '.png': 'file',
     '.jpg': 'file',
     '.jpeg': 'file',
     '.gif': 'file',
     '.svg': 'file',
-    '.webp': 'file',
-    '.woff': 'file', // Handle font files
+    '.webp': 'file', // Add support for WebP
+    '.webm': 'file', // Add support for WebM
+    '.woff': 'file',
     '.woff2': 'file',
     '.ttf': 'file',
     '.eot': 'file',
+    '.mp4': 'file',
+    '.pdf': 'file',
+    '.mp3': 'file',
+    '.zip': 'file',
   },
-})
-  .then(() => console.log('banana build completed successfully!'))
-  .catch(() => process.exit(1));
+}).catch(() => process.exit(1));

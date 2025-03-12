@@ -42,3 +42,94 @@
   </script>
 </body>
 </html>
+
+
+
+<!-- public/dashboard.html -->
+<canvas id="networkChart" width="400" height="200"></canvas>
+<canvas id="buildChart" width="400" height="200"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const networkCtx = document.getElementById('networkChart').getContext('2d');
+  const networkChart = new Chart(networkCtx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Network Requests',
+        data: [],
+        borderColor: 'rgba(255, 99, 132, 1)',
+        borderWidth: 1,
+      }],
+    },
+  });
+
+  const buildCtx = document.getElementById('buildChart').getContext('2d');
+  const buildChart = new Chart(buildCtx, {
+    type: 'bar',
+    data: {
+      labels: ['Build Time'],
+      datasets: [{
+        label: 'Build Time (ms)',
+        data: [0],
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 1,
+      }],
+    },
+  });
+
+  const ws = new WebSocket('ws://localhost:8080');
+  ws.onmessage = (event) => {
+    const message = JSON.parse(event.data);
+    if (message.type === 'metrics') {
+      // Update network chart
+      networkChart.data.labels.push(new Date().toLocaleTimeString());
+      networkChart.data.datasets[0].data.push(message.data.network.count);
+      networkChart.update();
+
+      // Update build chart
+      buildChart.data.datasets[0].data = [message.data.buildTime];
+      buildChart.update();
+    }
+  };
+</script>
+
+<!-- public/dashboard.html -->
+<canvas id="assetChart" width="400" height="200"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ctx = document.getElementById('assetChart').getContext('2d');
+  const assetChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['JS', 'CSS', 'Images', 'Fonts', 'Videos', 'PDFs', 'Audio', 'ZIPs'],
+      datasets: [{
+        label: 'Loaded Assets',
+        data: [0, 0, 0, 0, 0, 0, 0, 0],
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 1,
+      }],
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+        },
+      },
+    },
+  });
+
+  const ws = new WebSocket('ws://localhost:8080');
+  ws.onmessage = (event) => {
+    const message = JSON.parse(event.data);
+    if (message.type === 'metrics') {
+      const { js, css, images, fonts, videos, pdfs, audio, zips } = message.data.assets;
+      assetChart.data.datasets[0].data = [js, css, images, fonts, videos, pdfs, audio, zips];
+      assetChart.update();
+    }
+  };
+</script>

@@ -20,12 +20,12 @@
             🌙
           </button>
           <a
-            href="https://github.com/your-repo/banana.js"
+            href="https://github.com/ronyman-com/bananaJS"
             target="_blank"
             class="flex items-center space-x-1 hover:underline"
           >
             <img src="/github-icon.svg" alt="GitHub" class="h-6" /> <!-- Correct path -->
-            <span>12k</span>
+            <span id="github-stars">Loading stars...</span>
           </a>
         </div>
       </div>
@@ -58,10 +58,25 @@
     <!-- Footer -->
     <footer class="bg-gray-800 text-white p-6 dark:bg-gray-900">
       <div class="container mx-auto text-center">
-        <p>&copy; 2023 Banana.js. All rights reserved.</p>
+        <p>&copy; <span id="current-year"></span> Banana.js. All rights reserved.</p>
       </div>
     </footer>
   </div>
   <script type="module" src="/main.js"></script> <!-- Correct path -->
+  <script>
+    // Print the current year
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+
+    // Fetch GitHub stars
+    fetch('https://api.github.com/repos/ronyman-com/bananaJS')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('github-stars').textContent = data.stargazers_count;
+      })
+      .catch(error => {
+        console.error('Error fetching GitHub stars:', error);
+        document.getElementById('github-stars').textContent = 'Error loading stars';
+      });
+  </script>
 </body>
 </html>

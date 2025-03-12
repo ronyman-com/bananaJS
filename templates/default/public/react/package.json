@@ -2,11 +2,11 @@
     "name": "banana-react-project",
     "version": "1.0.0",
     "scripts": {
-      "dev": "banana dev",
+      "dev": "banana",
       "build": "banana build"
     },
     "dependencies": {
-      "banana.js": "^1.0.0",
+      "banana": "^1.0.0",
       "react": "^18.0.0",
       "react-dom": "^18.0.0",
       "sass": "^1.32.0",

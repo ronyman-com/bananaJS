@@ -13,11 +13,18 @@ let hmrUpdateTime;
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+
+
 // Watch for file changes (for HMR)
 const watcher = chokidar.watch('./public', {
   ignored: /node_modules/,
   persistent: true,
 });
+const requestMetrics = {
+  count: 0,
+  totalSize: 0,
+};
 
 // Dashboard route
 app.get('/dashboard', (req, res) => {
@@ -27,6 +34,11 @@ app.get('/dashboard', (req, res) => {
 // Middleware to log build start time
 app.use((req, res, next) => {
   buildStartTime = Date.now();
+  const start = Date.now();
+  res.on('finish', () => {
+    requestMetrics.count++;
+    requestMetrics.totalSize += parseInt(res.get('Content-Length') || 0, 10);
+  });
   next();
 });
 
@@ -60,7 +72,24 @@ setInterval(() => {
       client.send(JSON.stringify({ type: 'metrics', data: metrics }));
     }
   });
+  ///
+  
+  ///
 }, 1000);
+
+
+///////////
+
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    requestMetrics.count++;
+    requestMetrics.totalSize += parseInt(res.get('Content-Length') || 0, 10);
+  });
+  next();
+});
+
+
 
 // Start the server and open the browser
 app.listen(PORT, () => {
