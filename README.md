@@ -1,5 +1,7 @@
-
+## Start Page
 ![alt text](/public/bannaJs-index.png)
+
+## Create Project or App from browser.
 ![alt text](/public/bannaJs-create-browser.png)
 
 
@@ -12,55 +14,55 @@
 
 
 
-banana-docs/
-├── public/
-│   ├── index.html
-│   ├── styles/
-│   │   └── main.css
-│   ├── main.js
-│   ├── logo.svg
-│   ├── github-icon.svg
-│   └── dashboard.html
-├── src/
-│   ├── components/
-│   │   ├── Navbar.jsx
-│   │   ├── Sidebar.jsx
-│   │   └── Footer.jsx
-│   ├── pages/
-│   │   ├── Home.jsx
-│   │   ├── GettingStarted.jsx
-│   │   ├── Features.jsx
-│   │   ├── Plugins.jsx
-│   │   ├── ApiReference.jsx
-│   │   ├── Examples.jsx
-│   │   ├── Blog.jsx
-│   │   ├── Changelog.jsx
-│   │   └── News.jsx
-│   ├── router/
-│   │   └── index.js
-│   ├── styles/
-│   │   └── main.css
-│   ├── App.jsx
-│   └── main.jsx
+banana-docs/\
+├── public/\
+│   ├── index.html\
+│   ├── styles/\
+│   │   └── main.css\
+│   ├── main.js\
+│   ├── logo.svg\
+│   ├── github-icon.svg\
+│   └── dashboard.html\
+├── src/\
+│   ├── components/\
+│   │   ├── Navbar.jsx\
+│   │   ├── Sidebar.jsx\
+│   │   └── Footer.jsx\
+│   ├── pages/\
+│   │   ├── Home.jsx\
+│   │   ├── GettingStarted.jsx\
+│   │   ├── Features.jsx\
+│   │   ├── Plugins.jsx\
+│   │   ├── ApiReference.jsx\
+│   │   ├── Examples.jsx\
+│   │   ├── Blog.jsx\
+│   │   ├── Changelog.jsx\
+│   │   └── News.jsx\
+│   ├── router/\
+│   │   └── index.js\
+│   ├── styles/\
+│   │   └── main.css\
+│   ├── App.jsx\
+│   └── main.jsx\
 ├── plugins/
-│   ├── css.js
-│   ├── typescript.js
-│   ├── react.js
-│   └── vue.js
-├── dist/
-│   ├── bundle.js
-│   ├── main.css
-│   └── assets/
-│       ├── logo.svg
-│       ├── github-icon.svg
-│       └── images/
-├── server.js
-├── build.js
-├── banana.config.js
-├── package.json
-├── tailwind.config.js
-├── postcss.config.js
-└── README.md
+│   ├── css.js\
+│   ├── typescript.js\
+│   ├── react.js\
+│   └── vue.js\
+├── dist/\
+│   ├── bundle.js\
+│   ├── main.css\
+│   └── assets/\
+│       ├── logo.svg\
+│       ├── github-icon.svg\
+│       └── images/\
+├── server.js\
+├── build.js\
+├── banana.config.js\
+├── package.json\
+├── tailwind.config.js\
+├── postcss.config.js\
+└── README.md\
 
 
 
