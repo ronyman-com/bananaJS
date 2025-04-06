@@ -30,10 +30,10 @@ HMR: A mechanism to update modules in the browser without a full reload.
 # 1-Create a new project:
 
 # Use template Vue
-`banana create my-app --template vue`
+`banana create my-app --vue`
 
 # User template react
-banana create my-app --template react
+banana create my-app --react
 
 # 2-Install dependencies:
 
@@ -45,6 +45,8 @@ npm install or yarn`
 `yarn dev
 yarn build`
 
+## Create Project or App from CLI.
+![alt text](/public/banan_002.png)
 
 
 ### banana-docs
