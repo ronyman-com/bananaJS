@@ -1,6 +1,6 @@
 {
   "name": "@ronyman/bananajs",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -34,7 +34,6 @@
   "license": "MIT",
   "description": "A modern, fast, and lightweight JavaScript framework for building web applications.",
   "dependencies": {
-    "@ronyman/bananajs": "^0.0.1",
     "axios": "^1.8.4",
     "boxen": "^8.0.1",
     "chalk": "^5.4.1",
