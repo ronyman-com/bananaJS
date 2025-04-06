@@ -16,6 +16,6 @@
       "esbuild": "^0.15.0"
     },
     "bin": {
-        "banana": ".bin/cli.cjs"
+    "banana": "../bin/cli.cjs"
       }
   }

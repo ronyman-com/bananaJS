@@ -19,6 +19,6 @@
     "commander": "^9.0.0"
   },
   "bin": {
-    "banana": ".bin/cli.js"
+    "banana": "..bin/cli.js"
   }
 }

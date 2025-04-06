@@ -6,7 +6,7 @@
     "build": "banana build"
   },
   "dependencies": {
-    "@ronyman/bananajs": "^0.0.1",
+    "@ronyman/bananajs": "^0.0.4",
      "vue": "^3.0.0",
     "vue-router": "^4.0.0",
     "tailwindcss": "^3.0.0",
@@ -17,6 +17,6 @@
     "commander": "^9.0.0"
   },
   "bin": {
-    "banana": "./cli.js"
+    "banana": "..bin/cli.js"
   }
 }
