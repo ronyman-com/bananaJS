@@ -1,11 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>BananaJS</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banana.js App</title>
+  <link rel="stylesheet" href="/styles/banana.css"> <!-- Ensure this path is correct -->
+  <style>
+    /* Custom Banana.js brand colors */
+    .bg-banana-yellow {
+      background-color: #FFEB3B; /* Banana yellow */
+    }
+    .text-banana-black {
+      color: #000000; /* Black */
+    }
+    .hover\:bg-banana-dark-yellow:hover {
+      background-color: #FDD835; /* Darker yellow for hover */
+    }
+    .border-banana-yellow {
+      border-color: #FFEB3B; /* Yellow border */
+    }
+    .flex .logo-larg{
+      width: 200px;
+      align-items: center;
+    }
+  </style>
+</head>
+<body class="bg-banana-yellow text-banana-black">
+  <div id="app" class="min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <nav class="bg-black text-banana-yellow p-4">
+      <div class="container mx-auto flex justify-between items-center">
+        <div class="flex items-center">
+          <img src="/bananajs_logo.jpg" alt="Banana.js Logo" class="h-8 mr-2" /> <!-- Correct path -->
+          <span class="text-2xl font-bold">Banana.js</span>
+        </div>
+        <div class="flex items-center space-x-4">
+          <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-800">
+            🌙
+          </button>
+          <a
+            href="https://github.com/ronyman-com/bananaJS"
+            target="_blank"
+            class="flex items-center space-x-1 hover:underline"
+          >
+            <img src="/github-icon.svg" alt="GitHub" class="h-6" /> <!-- Correct path -->
+            <span id="github-stars">Loading stars...</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="flex-1 flex items-center justify-center">
+      <div class="text-center">
+          <img src="/bananajs_logo.jpg" alt="Banana.js Logo" class="logo-larg container mx-auto text-center" /> <!-- Correct path -->
+        <h1 class="text-6xl font-bold mb-4">Welcome to Banana.js</h1>
+        <p class="text-xl mb-8">
+          A modern, fast, and lightweight JavaScript framework for building web applications.
+        </p>
+        <div class="space-x-4">
+          <a
+            href="https://bananajs.com//getting-started"
+            class="bg-black text-banana-yellow px-6 py-3 rounded-lg hover:bg-gray-900"
+          >
+            Get Started
+          </a>
+          <a
+            href="https://bananajs.com/features"
+            class="bg-banana-yellow text-black px-6 py-3 rounded-lg hover:bg-banana-dark-yellow border border-banana-yellow"
+          >
+            Explore Features
+          </a>
+          <a
+            href="/dashboard"
+            class="bg-black text-banana-yellow px-6 py-3 rounded-lg hover:bg-gray-900"
+          >
+            Create from Browser
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-black text-banana-yellow p-6">
+      <div class="container mx-auto text-center">
+        <p>&copy; <span id="current-year"></span> Banana.js. All rights reserved.</p>
+      </div>
+      <p> Project Own by:
+      <a
+    href="https://www.ronyman.com/"
+    class="container mx-auto text-left">
+    Rony MAN</a></p>
+    </footer>
+  </div>
+  <script type="module" src="/main.js"></script> <!-- Correct path -->
+  <script>
+    // Print the current year
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+
+    // Fetch GitHub stars
+    fetch('https://api.github.com/repos/ronyman-com/bananaJS')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('github-stars').textContent = data.stargazers_count;
+      })
+      .catch(error => {
+        console.error('Error fetching GitHub stars:', error);
+        document.getElementById('github-stars').textContent = 'Error loading stars';
+      });
+
+    // Theme toggle logic
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const body = document.body;
+
+    // Check for saved theme in localStorage
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      body.classList.add(savedTheme);
+      themeToggleBtn.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+      body.classList.toggle('dark');
+      const isDarkMode = body.classList.contains('dark');
+      localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+      themeToggleBtn.textContent = isDarkMode ? '☀️' : '🌙';
+      console.log('Theme toggled:', isDarkMode ? 'Dark' : 'Light'); // Debugging
+    });
+  </script>
+</body>
 </html>

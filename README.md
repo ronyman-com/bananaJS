@@ -54,54 +54,62 @@ yarn build`
 
 
 bananaJS/\
-├── public/\
-│   ├── index.html\
-│   ├── styles/\
-│   │   └── main.css\
-│   ├── main.js\
-│   ├── logo.svg\
-│   ├── github-icon.svg\
-│   └── dashboard.html\
-├── src/\
-│   ├── components/\
-│   │   ├── Navbar.jsx\
-│   │   ├── Sidebar.jsx\
-│   │   └── Footer.jsx\
-│   ├── pages/\
-│   │   ├── Home.jsx\
-│   │   ├── GettingStarted.jsx\
-│   │   ├── Features.jsx\
-│   │   ├── Plugins.jsx\
-│   │   ├── ApiReference.jsx\
-│   │   ├── Examples.jsx\
-│   │   ├── Blog.jsx\
-│   │   ├── Changelog.jsx\
-│   │   └── News.jsx\
-│   ├── router/\
-│   │   └── index.js\
-│   ├── styles/\
-│   │   └── main.css\
-│   ├── App.jsx\
-│   └── main.jsx\
-├── plugins/
+├── Banana/                  # Main project directory\
+│   ├── public/              # Served static files\
+│   │   ├── index.html\
+│   │   ├── styles/\
+│   │   │   └── main.css\
+│   │   ├── main.js\
+│   │   ├── logo.svg\
+│   │   ├── github-icon.svg\
+│   │   └── dashboard.html\
+│   └── src/                 # Source files\
+│       ├── components/\
+│       │   ├── Navbar.jsx\
+│       │   ├── Sidebar.jsx\
+│       │   └── Footer.jsx\
+│       ├── pages/\
+│       │   ├── Home.jsx\
+│       │   ├── GettingStarted.jsx\
+│       │   ├── Features.jsx\
+│       │   ├── Plugins.jsx\
+│       │   ├── ApiReference.jsx\
+│       │   ├── Examples.jsx\
+│       │   ├── Blog.jsx\
+│       │   ├── Changelog.jsx\
+│       │   └── News.jsx\
+│       ├── router/\
+│       │   └── index.js\
+│       ├── styles/\
+│       │   └── main.css\
+│       ├── App.jsx\
+│       └── main.jsx\
+├── bin/
+│   ├── banana.config.json\
+│   ├── build.cjs\
+│   ├── cli.cjs\
+│   └── server.cjs\
+├── lib/\
+│   ├── cli-version.cjs\
+│   └── create-app.cjs\
+├── templates/               # Project templates
+├── plugins/\
 │   ├── css.js\
 │   ├── typescript.js\
 │   ├── react.js\
 │   └── vue.js\
-├── dist/\
+├── dist/                    # Build output
 │   ├── bundle.js\
 │   ├── main.css\
 │   └── assets/\
 │       ├── logo.svg\
 │       ├── github-icon.svg\
 │       └── images/\
-├── server.js\
-├── build.js\
-├── banana.config.js\
+├── banana.config.js         # Configuration\
 ├── package.json\
 ├── tailwind.config.js\
 ├── postcss.config.js\
-└── README.md\
+└── README.md
 
 
 

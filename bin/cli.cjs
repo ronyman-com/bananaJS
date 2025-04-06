@@ -201,7 +201,7 @@ program
     const startTime = Date.now();
     console.log(primaryColor('\n⚡ Starting development server...\n'));
 
-    const serverPath = path.join(__dirname, 'server.js');
+    const serverPath = path.join(__dirname, 'server.cjs');
     const env = {
       ...process.env,
       NODE_ENV: 'development',
@@ -241,13 +241,13 @@ program
 program
   .command('start')
   .description('Start production server')
-  .option('-p, --port <port>', 'Port to run on', '5000')
+  .option('-p, --port <port>', 'Port to run on', '4200')
   .action((options) => {
     showBanner();
     const startTime = Date.now();
     console.log(primaryColor('\n🚀 Launching production server...\n'));
 
-    const serverPath = path.join(__dirname, 'server.js');
+    const serverPath = path.join(__dirname, 'server.cjs');
     const env = {
       ...process.env,
       NODE_ENV: 'production',
@@ -324,7 +324,7 @@ program
         process.exit(1);
       }
     } else {
-      const buildPath = path.join(__dirname, 'build.js');
+      const buildPath = path.join(__dirname, 'build.cjs');
       const env = {
         ...process.env,
         ANALYZE_BUNDLE: options.analyze ? 'true' : 'false'

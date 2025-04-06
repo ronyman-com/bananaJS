@@ -1,6 +1,11 @@
-import esbuild from 'esbuild';
-import config from './banana.config.json' assert { type: 'json' };
+// build.cjs
+const esbuild = require('esbuild');
 const fs = require('fs-extra');
+const path = require('path');
+
+// Load config - CommonJS alternative for JSON imports
+const configPath = path.join(__dirname, './banana.config.json');
+const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
 
 // Copy CLI files to dist
 fs.copySync('./bin', './dist/bin');

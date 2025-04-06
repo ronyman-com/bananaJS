@@ -1,7 +1,6 @@
 {
   "name": "@ronyman/bananajs",
-  "version": "0.0.2",
-  "private": true,
+  "version": "0.0.3",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -71,7 +70,7 @@
     "vite": "^6.2.2"
   },
   "bin": {
-    "banana": "./bin/cli.cjs"
+    "banana": ".bin/cli.cjs"
   },
   "repository": {
     "type": "git",

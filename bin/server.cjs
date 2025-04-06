@@ -1,48 +1,51 @@
-import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs-extra';
-import open from 'open';
-import { WebSocketServer } from 'ws';
-import chokidar from 'chokidar';
-import http from 'http';
+const express = require('express');
+const path = require('path');
+const fs = require('fs-extra');
+const open = require('open');
+const WebSocket = require('ws');
+const chokidar = require('chokidar');
+const http = require('http');
+const createApp = require(path.resolve(__dirname, '../lib/create-app.cjs'));
 
-
-// server.js design for CLI
-const { createApp } = require('./lib/create-app');
-// Get directory name equivalent in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+// Initialize Express and HTTP server
 const app = express();
-const PORT = 5000;
-
-// Create HTTP server
 const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 
-// Create WebSocket server attached to the HTTP server
-const wss = new WebSocketServer({ server });
+// Configuration
+const PORT = 5000;
+const bananaRoot = path.join(__dirname, '..', '');
+const publicDir = path.join(bananaRoot, 'public');
+const srcDir = path.join(bananaRoot, 'src');
 
-// Middleware to track build start time
+// Verify paths exist
+if (!fs.existsSync(publicDir)) {
+  console.error(`❌ Public directory not found at: ${publicDir}`);
+  process.exit(1);
+}
+
+// Performance tracking
 let buildStartTime;
 let hmrUpdateTime;
+
+// Middleware
 app.use((req, res, next) => {
   buildStartTime = Date.now();
   next();
 });
 
-// Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/src', express.static(path.join(__dirname, 'src')));
+// Static file serving
+app.use(express.static(publicDir));
+app.use('/src', express.static(srcDir));
 app.use(express.json());
 
-// Watch for file changes (for HMR)
-const watcher = chokidar.watch(['./public', './src'], {
+// WebSocket and HMR setup
+const watcher = chokidar.watch([publicDir, srcDir], {
   ignored: /node_modules/,
   persistent: true,
 });
 
-// Send metrics to clients periodically
+// Metrics reporting
 setInterval(() => {
   const memoryUsage = process.memoryUsage();
   const metrics = {
@@ -53,22 +56,23 @@ setInterval(() => {
   };
 
   wss.clients.forEach((client) => {
-    if (client.readyState === WebSocketServer.OPEN) {
+    if (client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify({ type: 'metrics', data: metrics }));
     }
   });
 }, 1000);
 
-// File change handler
+// File change handler for HMR
 watcher.on('change', (filePath) => {
   hmrUpdateTime = Date.now() - buildStartTime;
   console.log(`HMR update took ${hmrUpdateTime}ms`);
   
+  const relativePath = path.relative(process.cwd(), filePath);
   wss.clients.forEach((client) => {
-    if (client.readyState === WebSocketServer.OPEN) {
+    if (client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify({ 
         type: 'update', 
-        file: path.relative(process.cwd(), filePath),
+        file: relativePath,
         time: hmrUpdateTime
       }));
     }
@@ -77,11 +81,11 @@ watcher.on('change', (filePath) => {
 
 // Routes
 app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/dashboard.html'));
+  res.sendFile(path.join(publicDir, 'dashboard.html'));
 });
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(publicDir, 'index.html'));
 });
 
 // API Endpoints
@@ -126,33 +130,6 @@ app.post('/api/create-project', (req, res) => {
   res.json({ success: true, message: `Project "${projectName}" created successfully!` });
 });
 
-app.post('/api/create-app', (req, res) => {
-  const { appName, template } = req.body;
-  const appDir = path.join(process.cwd(), appName);
-
-  try {
-    if (fs.existsSync(appDir)) {
-      return res.status(400).json({ success: false, message: `App "${appName}" already exists.` });
-    }
-
-    const templateDir = path.join(__dirname, `templates/${template}`);
-    if (!fs.existsSync(templateDir)) {
-      return res.status(400).json({ success: false, message: `Template "${template}" does not exist.` });
-    }
-
-    fs.copySync(templateDir, appDir);
-    res.json({ success: true, message: `App "${appName}" created successfully with ${template} template!` });
-  } catch (error) {
-    console.error('Error creating app:', error);
-    res.status(500).json({ success: false, message: `Internal server error: ${error.message}` });
-  }
-});
-
-
-
-
-
-// API endpoint for dashboard
 app.post('/api/create-app', async (req, res) => {
   try {
     const { appName, template } = req.body;
@@ -171,10 +148,7 @@ app.post('/api/create-app', async (req, res) => {
   }
 });
 
-
-
-
-// WebSocket connection handler
+// WebSocket event handlers
 wss.on('connection', (ws) => {
   console.log('Client connected');
   
@@ -182,7 +156,7 @@ wss.on('connection', (ws) => {
   ws.on('error', (error) => console.error('WebSocket error:', error));
 });
 
-// Start the server
+// Start server
 server.listen(PORT, () => {
   console.log(`Banana.js dev server running at:
   - HTTP: http://localhost:${PORT}
