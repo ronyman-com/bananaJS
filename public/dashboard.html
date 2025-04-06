@@ -3,133 +3,282 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/styles/banana.css"> <!-- Correct path -->
-  <title>Banana.js Dashboard</title>
+  <title>BananaJS Development Dashboard</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      color: #ffeb3b;
     }
-    .metric {
-      margin-bottom: 10px;
+    h1 {
+      text-align: center;
+      padding: 20px;
+      background-color: #ffeb3b;
+      color: #000;
+      margin: 0;
+    }
+    .file-tree {
+      margin: 20px;
+      padding: 20px;
+      background-color: #1a1a1a;
+      border-radius: 8px;
+    }
+    .file-tree ul {
+      list-style-type: none;
+      padding-left: 20px;
+    }
+    .file-tree li {
+      cursor: pointer;
+      padding: 5px 0;
+    }
+    .file-tree li.folder {
+      font-weight: bold;
+      color: #ffeb3b;
+    }
+    .file-tree li.file {
+      color: #fff;
+    }
+    .actions {
+      margin: 20px;
+      text-align: center;
+    }
+    button {
+      background-color: #ffeb3b;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #fdd835;
+    }
+    select {
+      padding: 10px;
+      border-radius: 5px;
+      margin: 5px;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #1a1a1a;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+    .modal input, .modal select {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ffeb3b;
+      background-color: #000;
+      color: #ffeb3b;
+    }
+    .modal button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
     }
   </style>
 </head>
 <body>
-  <h1>Banana.js Dashboard</h1>
-  <div class="metric">
-    <strong>Memory Usage:</strong> <span id="memory">0</span> MB
+  <h1>BananaJS Development Dashboard</h1>
+  <!-- public/dashboard.html -->
+<div class="metric">
+  <strong>Build Time:</strong> <span id="build-time">0</span> ms
+</div>
+<div class="metric">
+  <strong>HMR Update Time:</strong> <span id="hmr-update-time">0</span> ms
+</div>
+
+<script>
+  ws.onmessage = (event) => {
+    const message = JSON.parse(event.data);
+    if (message.type === 'metrics') {
+      document.getElementById('memory').textContent = message.data.memory.toFixed(2);
+      document.getElementById('cpu').textContent = message.data.cpu.toFixed(2);
+      document.getElementById('build-time').textContent = message.data.buildTime;
+      document.getElementById('hmr-update-time').textContent = message.data.hmrUpdateTime;
+    }
+  };
+</script>
+  <div class="actions">
+    <h2>Actions</h2>
+    <button onclick="openCreateProjectModal()">Create Project</button>
+    <button onclick="openCreateAppModal()">Create App</button>
+    <a
+    href="/"
+    class="actions"
+  >
+    Back to HomePage
+  </a>
   </div>
-  <div class="metric">
-    <strong>CPU Usage:</strong> <span id="cpu">0</span> ms
+  <div class="file-tree">
+    <h2>File Tree</h2>
+    <ul id="file-tree"></ul>
+  </div>
+  
+
+  <!-- Create Project Modal -->
+  <div id="createProjectModal" class="modal">
+    <h3>Create Project</h3>
+    <input type="text" id="projectName" placeholder="Enter project name">
+    <button onclick="createProject()">Create</button>
+    <button onclick="closeModal('createProjectModal')">Cancel</button>
+  </div>
+
+  <!-- Create App Modal -->
+  <div id="createAppModal" class="modal">
+    <h3>Create App</h3>
+    <input type="text" id="appName" placeholder="Enter app name">
+    <select id="appTemplate">
+      <option value="Docs">Docs</option>
+      <option value="Vue">Vue</option>
+      <option value="React">React</option>
+    </select>
+    <button onclick="createApp()">Create</button>
+    <button onclick="closeModal('createAppModal')">Cancel</button>
   </div>
 
   <script>
+    // WebSocket connection for HMR
     const ws = new WebSocket('ws://localhost:8080');
-
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
-
-      if (message.type === 'metrics') {
-        document.getElementById('memory').textContent = message.data.memory.toFixed(2);
-        document.getElementById('cpu').textContent = message.data.cpu.toFixed(2);
+      if (message.type === 'update') {
+        console.log(`File changed: ${message.file}`);
+        loadFileTree(); // Refresh the file tree
       }
     };
 
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
+    // Fetch and display the file tree
+    async function loadFileTree(directory = '') {
+      try {
+        const response = await fetch(`/api/files?directory=${directory}`);
+        if (!response.ok) throw new Error('Failed to load file tree');
+        const files = await response.json();
+        const fileTree = document.getElementById('file-tree');
+        fileTree.innerHTML = renderFileTree(files);
+      } catch (error) {
+        console.error('Error loading file tree:', error);
+        alert('Error loading file tree. Check the console for details.');
+      }
+    }
+
+    // Render the file tree
+    function renderFileTree(files) {
+      return files.map(file => `
+        <li class="${file.isDirectory ? 'folder' : 'file'}">
+          ${file.name}
+          ${file.isDirectory ? renderFileTree(file.children || []) : '/templates'}
+        </li>
+      `).join('');
+    }
+
+    // Open Create Project Modal
+    function openCreateProjectModal() {
+      document.getElementById('createProjectModal').style.display = 'block';
+    }
+
+    // Open Create App Modal
+    function openCreateAppModal() {
+      document.getElementById('createAppModal').style.display = 'block';
+    }
+
+    // Close Modal
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+
+    // Create a project
+    async function createProject() {
+      try {
+        const projectName = document.getElementById('projectName').value;
+        if (projectName) {
+          const response = await fetch('/api/create-project', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ projectName }),
+          });
+          if (!response.ok) throw new Error('Failed to create project');
+          const result = await response.json();
+          alert(result.message);
+          closeModal('createProjectModal');
+          loadFileTree(projectName); // Refresh file tree for the new project
+        }
+      } catch (error) {
+        console.error('Error creating project:', error);
+        alert('Error creating project. Check the console for details.');
+      }
+    }
+
+    // Create an app with template selection
+    async function createApp() {
+      try {
+        const appName = document.getElementById('appName').value;
+        const template = document.getElementById('appTemplate').value;
+        if (appName) {
+          const response = await fetch('/api/create-app', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ appName, template }),
+          });
+          if (!response.ok) throw new Error('Failed to create app');
+          const result = await response.json();
+          alert(result.message);
+          closeModal('createAppModal');
+          loadFileTree(appName); // Refresh file tree for the new app
+        }
+      } catch (error) {
+        console.error('Error creating app:', error);
+        alert('Error creating app. Check the console for details.');
+      }
+    }
+    async function createApp() {
+  try {
+    const appName = document.getElementById('appName').value;
+    if (!appName) {
+      alert('Please enter an app name.');
+      return;
+    }
+
+    const template = document.getElementById('appTemplate').value;
+    if (!['Docs', 'Vue', 'React'].includes(template)) {
+      alert('Invalid template. Please choose Docs, Vue, or React.');
+      return;
+    }
+
+    const response = await fetch('/api/create-app', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ appName, template }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to create app');
+    }
+
+    const result = await response.json();
+    alert(result.message);
+    closeModal('createAppModal');
+    loadFileTree(appName); // Refresh file tree for the new app
+  } catch (error) {
+    console.error('Error creating app:', error);
+    alert(`Error creating app: ${error.message}`);
+  }
+}
+    // Load file tree on page load
+    loadFileTree();
   </script>
 </body>
 </html>
-
-
-
-<!-- public/dashboard.html -->
-<canvas id="networkChart" width="400" height="200"></canvas>
-<canvas id="buildChart" width="400" height="200"></canvas>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-  const networkCtx = document.getElementById('networkChart').getContext('2d');
-  const networkChart = new Chart(networkCtx, {
-    type: 'line',
-    data: {
-      labels: [],
-      datasets: [{
-        label: 'Network Requests',
-        data: [],
-        borderColor: 'rgba(255, 99, 132, 1)',
-        borderWidth: 1,
-      }],
-    },
-  });
-
-  const buildCtx = document.getElementById('buildChart').getContext('2d');
-  const buildChart = new Chart(buildCtx, {
-    type: 'bar',
-    data: {
-      labels: ['Build Time'],
-      datasets: [{
-        label: 'Build Time (ms)',
-        data: [0],
-        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1,
-      }],
-    },
-  });
-
-  const ws = new WebSocket('ws://localhost:8080');
-  ws.onmessage = (event) => {
-    const message = JSON.parse(event.data);
-    if (message.type === 'metrics') {
-      // Update network chart
-      networkChart.data.labels.push(new Date().toLocaleTimeString());
-      networkChart.data.datasets[0].data.push(message.data.network.count);
-      networkChart.update();
-
-      // Update build chart
-      buildChart.data.datasets[0].data = [message.data.buildTime];
-      buildChart.update();
-    }
-  };
-</script>
-
-<!-- public/dashboard.html -->
-<canvas id="assetChart" width="400" height="200"></canvas>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-  const ctx = document.getElementById('assetChart').getContext('2d');
-  const assetChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['JS', 'CSS', 'Images', 'Fonts', 'Videos', 'PDFs', 'Audio', 'ZIPs'],
-      datasets: [{
-        label: 'Loaded Assets',
-        data: [0, 0, 0, 0, 0, 0, 0, 0],
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1,
-      }],
-    },
-    options: {
-      scales: {
-        y: {
-          beginAtZero: true,
-        },
-      },
-    },
-  });
-
-  const ws = new WebSocket('ws://localhost:8080');
-  ws.onmessage = (event) => {
-    const message = JSON.parse(event.data);
-    if (message.type === 'metrics') {
-      const { js, css, images, fonts, videos, pdfs, audio, zips } = message.data.assets;
-      assetChart.data.datasets[0].data = [js, css, images, fonts, videos, pdfs, audio, zips];
-      assetChart.update();
-    }
-  };
-</script>

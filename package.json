@@ -1,42 +1,84 @@
 {
-  "name": "banana",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "@ronyman/bananajs",
+  "version": "0.0.2",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js"
+    }
+  },
   "scripts": {
-    "dev": "node server.js --port 5000",
-    "build": "node build.js",
-    "build:css": "tailwindcss build public/styles/main.css -o public/styles/banana.css",
+    "dev": "node bin/cli.cjs dev",
+    "build": "node bin/cli.cjs build",
+    "serve": "node bin/cli.cjs serve",
+    "start": "node bin/cli.cjs start",
+    "help": "node bin/cli.cjs help",
+    "create-app": "node bin/cli.cjs create-app",
+    "create-project": "node bin/cli.cjs create-project",
+    "version": "node bin/cli.cjs --version",
+    "build:css": "tailwindcss build src/styles/main.css -o public/styles/banana.css --minify",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": [
+    "BananaJs",
+    "RonyMAN",
+    "JavaScript",
+    "Framework",
+    "Vue",
+    "React"
+  ],
+  "author": "Rony MAN",
+  "license": "MIT",
+  "description": "A modern, fast, and lightweight JavaScript framework for building web applications.",
   "dependencies": {
-    "@vitejs/plugin-react": "^4.3.4",
-    "@vitejs/plugin-vue": "^5.2.1",
+    "@ronyman/bananajs": "^0.0.1",
+    "axios": "^1.8.4",
+    "boxen": "^8.0.1",
+    "chalk": "^5.4.1",
     "chart.js": "^4.4.8",
     "chokidar": "^4.0.3",
     "commander": "^13.1.0",
-    "esbuild": "^0.25.0",
     "express": "^4.21.2",
+    "figlet": "^1.8.0",
     "firebase": "^11.4.0",
     "firebase-admin": "^13.2.0",
     "fs-extra": "^11.3.0",
+    "gradient-string": "^3.0.0",
+    "open": "8.4.2",
     "postcss-modules": "^6.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sass": "^1.85.1",
-    "typescript": "^5.8.2",
-    "vue": "^3.5.13",
-     "ws": "^8.0.0"
-  },
-  "bin": {
-    "banana": "./cli.js"
+    "serve-handler": "^6.1.6",
+    "vue": "^3.2.0",
+    "vue-router": "^4.5.0",
+    "ws": "^8.18.1"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-vue": "^5.2.1",
     "autoprefixer": "^10.4.21",
+    "concurrently": "^8.2.2",
+    "esbuild": "^0.25.0",
+    "esbuild-css-modules-plugin": "^3.1.4",
     "postcss": "^8.5.3",
-    "tailwindcss": "^3.4.17"
-  }
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.2"
+  },
+  "bin": {
+    "banana": "./bin/cli.cjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ronyman-com/bananaJS.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ronyman-com/bananaJS/issues"
+  },
+  "homepage": "https://github.com/ronyman-com/bananaJS#readme"
 }

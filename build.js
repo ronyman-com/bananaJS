@@ -1,32 +1,15 @@
-// build.js
-const esbuild = require('esbuild');
-const config = require('./banana.config.js');
+import esbuild from 'esbuild';
+import config from './banana.config.json' assert { type: 'json' };
+const fs = require('fs-extra');
+
+// Copy CLI files to dist
+fs.copySync('./bin', './dist/bin');
+fs.copySync('./lib', './dist/lib');
 
 esbuild.build({
   entryPoints: [config.entry],
   bundle: true,
-  minify: config.esbuild.minify,
-  sourcemap: config.esbuild.sourcemap,
-  outfile: `${config.outDir}/bundle.js`,
-  loader: {
-    '.ts': 'ts',
-    '.jsx': 'jsx',
-    '.vue': 'file',
-    '.scss': 'css',
-    '.png': 'file',
-    '.jpg': 'file',
-    '.jpeg': 'file',
-    '.gif': 'file',
-    '.svg': 'file',
-    '.webp': 'file', // Add support for WebP
-    '.webm': 'file', // Add support for WebM
-    '.woff': 'file',
-    '.woff2': 'file',
-    '.ttf': 'file',
-    '.eot': 'file',
-    '.mp4': 'file',
-    '.pdf': 'file',
-    '.mp3': 'file',
-    '.zip': 'file',
-  },
+  outdir: config.outDir,
+  ...config.esbuild,
+  alias: config.alias
 }).catch(() => process.exit(1));

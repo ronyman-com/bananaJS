@@ -1,0 +1,35 @@
+{
+    "entry": "./src/main.js",
+    "outDir": "dist",
+    "esbuild": {
+      "minify": true,
+      "sourcemap": true,
+      "loader": {
+        ".ts": "ts",
+        ".jsx": "jsx",
+        ".vue": "file",
+        ".scss": "css",
+        ".png": "file",
+        ".jpg": "file",
+        ".jpeg": "file",
+        ".gif": "file",
+        ".svg": "file",
+        ".webp": "file",
+        ".webm": "file",
+        ".woff": "file",
+        ".woff2": "file",
+        ".ttf": "file",
+        ".eot": "file",
+        ".mp4": "file",
+        ".pdf": "file",
+        ".mp3": "file",
+        ".zip": "file"
+      }
+    },
+    "plugins": [],
+    "include": ["src/**/*"],
+    "exclude": ["node_modules"],
+    "alias": {
+      "@": "./src"
+    }
+  }

@@ -1,0 +1,24 @@
+{
+    "name": "banana-react-project",
+    "version": "0.0.2",
+    "scripts": {
+      "dev": "banana dev",
+      "serve": "banana serve",
+      "start": "banana start",
+      "build": "banana build",
+      "build-css": "banana build --css",
+      "create-app": "banana create-app",
+      "create-project": "banana create-project"
+    },
+    "bin": {
+    "banana": ".bin/cli.cjs"
+  },
+    "dependencies": {
+      "@ronyman/bananajs": "^0.0.1",
+      "react": "^18.0.0",
+      "react-dom": "^18.0.0",
+      "sass": "^1.32.0",
+      "typescript": "^5.0.0",
+      "esbuild": "^0.15.0"
+    }
+  }

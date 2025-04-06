@@ -1,10 +1,16 @@
-// src/main.js
-const socket = new WebSocket('ws://localhost:8080');
+import { createApp } from 'vue'
+import { createRouter, createWebHistory } from 'vue-router'
+import App from './App.vue'
+import Dashboard from './Dashboard.vue'
 
-socket.addEventListener('message', (event) => {
-  const message = JSON.parse(event.data);
-  if (message.type === 'update') {
-    console.log(`Reloading ${message.file}`);
-    // Implement module reloading logic here
-  }
-});
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [
+    { path: '/', component: App },
+    { path: '/dashboard', component: Dashboard }
+  ]
+})
+
+const app = createApp(App)
+app.use(router)
+app.mount('#app')

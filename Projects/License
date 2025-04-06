@@ -1,0 +1,8 @@
+
+---
+
+### **How to Use the Template**
+1. Clone the template repository or copy the files into a new project.
+2. Install dependencies:
+   ```bash
+   npm install

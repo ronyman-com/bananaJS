@@ -1,3 +1,11 @@
+// Import Vue
+import { createApp } from 'vue';
+import App from './App.vue'; // Import your root Vue component
+
+// Create and mount the Vue app
+const app = createApp(App);
+app.mount('#app');
+
 // WebSocket client for HMR
 const ws = new WebSocket('ws://localhost:8080');
 
