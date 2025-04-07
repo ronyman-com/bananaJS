@@ -8,7 +8,7 @@
       "build": "banana build"
     },
     "dependencies": {
-      "@ronyman/bananajs": "^0.0.1",
+      "@ronyman/bananajs": "^0.0.6",
       "react": "^18.0.0",
       "react-dom": "^18.0.0",
       "sass": "^1.32.0",

@@ -14,7 +14,8 @@ const styles = {
 function getVersion() {
   try {
     const packagePath = path.join(__dirname, '../package.json');
-    console.log(styles.debug('Current Banana Version:'));
+    console.log(styles.debug('Looking for package.json at:'));
+    console.log(styles.path(packagePath));
 
     if (!fs.existsSync(packagePath)) {
       throw new Error('package.json not found');
@@ -23,7 +24,7 @@ function getVersion() {
     const packageData = fs.readJsonSync(packagePath);
     const version = packageData.version || '0.0.0';
     
-    console.log(styles.success(`Version ${styles.version(version)} last released.`));
+    console.log(styles.success(`Version ${styles.version(version)} found`));
     return version;
 
   } catch (err) {

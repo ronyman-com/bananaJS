@@ -459,5 +459,46 @@ if (process.argv.length < 3) {
   program.help();
 }
 
+
+
+// 1. FIXED PATHS - NEVER CHANGE
+const BIN_DIR = path.dirname(fs.realpathSync(__filename));
+const PROJECT_ROOT = path.resolve(BIN_DIR, '..');
+
+// 2. COMMAND RESOLUTION
+function resolveCommand() {
+  const args = process.argv.slice(2);
+  const command = args[0] || 'build';
+  
+  // Map commands to their respective handlers
+  const commands = {
+    build: () => require('./build.cjs'),
+    serve: () => require('./server.cjs'),
+    // Add other commands as needed
+  };
+
+  if (!commands[command]) {
+    console.error(`❌ Unknown command: ${command}`);
+    console.log('Available commands:', Object.keys(commands).join(', '));
+    process.exit(1);
+  }
+
+  return commands[command]();
+}
+
+// 3. EXECUTE WITH ERROR HANDLING
+try {
+  resolveCommand();
+} catch (err) {
+  console.error('❌ CLI Error:', err.message);
+  console.error('BIN_DIR:', BIN_DIR);
+  console.error('PROJECT_ROOT:', PROJECT_ROOT);
+  process.exit(1);
+}
+
+///
+
+
+
 program.parse(process.argv);
 })();
