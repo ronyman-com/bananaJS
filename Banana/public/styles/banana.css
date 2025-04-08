@@ -1,0 +1,43 @@
+/* Custom Banana.js brand colors */
+.bg-banana-yellow {
+    background-color: #FFEB3B; /* Banana yellow */
+  }
+  .text-banana-black {
+    color: #000000; /* Black */
+  }
+  .hover\:bg-banana-dark-yellow:hover {
+    background-color: #FDD835; /* Darker yellow for hover */
+  }
+  .border-banana-yellow {
+    border-color: #FFEB3B; /* Yellow border */
+  }
+  
+  /* Layout styles */
+  #app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  nav {
+    background-color: #000;
+    color: #FFEB3B;
+    padding: 1rem;
+  }
+  footer {
+    background-color: #000;
+    color: #FFEB3B;
+    padding: 1.5rem;
+  }
+  
+  /* Logo size */
+  .flex .logo-larg {
+    width: 200px;
+    align-items: center;
+  }
+  
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark light;
+    }
+  }

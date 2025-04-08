@@ -5,21 +5,35 @@ const { program } = require('commander');
 const fs = require('fs-extra');
 const path = require('path');
 const { spawn } = require('child_process');
-const handler = require('serve-handler');
-const http = require('http');
+const handler = require('serve-handler'); // Used only by 'serve' potentially
+const http = require('http'); // Not directly used by CLI commands
+const os = require('os'); // Added for networkInterfaces
 
 // Load version and createApp synchronously
-const { version } = require(path.join(__dirname, '..', 'lib', 'cli-version.cjs'));
-const createApp = require(path.resolve(__dirname, '../lib/create-app.cjs'));
+let version = '0.0.0'; // Default version
+let createApp = async () => { throw new Error('createApp module not loaded'); }; // Default function
+
+try {
+    version = require(path.join(__dirname, '..', 'lib', 'cli-version.cjs')).version;
+} catch (e) {
+    console.warn("⚠️ Could not load version info.");
+}
+try {
+    createApp = require(path.resolve(__dirname, '../lib/create-app.cjs'));
+} catch (e) {
+    console.warn("⚠️ Could not load createApp module.");
+}
+
 
 // Async wrapper for ESM imports
 (async () => {
+  let chalk, gradient, figlet, boxen;
   try {
     // Dynamic imports for ESM packages
-    const { default: chalk } = await import('chalk');
-    const { default: gradient } = await import('gradient-string');
-    const { default: figlet } = await import('figlet');
-    const { default: boxen } = await import('boxen');
+    chalk = (await import('chalk')).default;
+    gradient = (await import('gradient-string')).default;
+    figlet = (await import('figlet')).default;
+    boxen = (await import('boxen')).default;
 
     // Configure colors and styles
     const primaryColor = gradient('cyan', 'violet');
@@ -29,6 +43,7 @@ const createApp = require(path.resolve(__dirname, '../lib/create-app.cjs'));
     const highlightStyle = chalk.bold.cyan;
     const commandStyle = chalk.bold.yellow;
     const optionStyle = chalk.italic.gray;
+    const warnStyle = chalk.yellow;
 
     // Create banner
     const showBanner = () => {
@@ -37,9 +52,9 @@ const createApp = require(path.resolve(__dirname, '../lib/create-app.cjs'));
           primaryColor(
             figlet.textSync('BananaJS', {
               horizontalLayout: 'full',
-              font: 'ANSI Shadow'
+              font: 'ANSI Shadow' // Consider 'Standard' or others if this font isn't available everywhere
             })
-          ) + 
+          ) +
           `\n${secondaryColor('A modern JavaScript framework toolkit')}\n` +
           chalk.gray(`Version ${version}`),
           {
@@ -52,10 +67,39 @@ const createApp = require(path.resolve(__dirname, '../lib/create-app.cjs'));
       );
     };
 
-    // Configure server
-    const server = http.createServer((request, response) => {
-      return handler(request, response);
-    });
+    // Helper function to find project root (looking for banana.config.js/cjs or package.json)
+    function findProjectRoot(startPath) {
+      let current = path.resolve(startPath);
+      const rootPath = path.parse(current).root;
+      while (current !== rootPath) {
+        if (fs.existsSync(path.join(current, 'banana.config.js')) ||
+            fs.existsSync(path.join(current, 'banana.config.cjs')) ||
+            fs.existsSync(path.join(current, 'package.json'))) {
+          return current;
+        }
+        const parent = path.dirname(current);
+         if (parent === current) break; // Prevent infinite loop at root
+        current = parent;
+      }
+      return startPath; // Fall back to starting directory if no indicator found
+    }
+
+    // Helper function to get local IP address
+    function getLocalIpAddress() {
+      const interfaces = os.networkInterfaces();
+      for (const name of Object.keys(interfaces)) {
+        const ifaceArr = interfaces[name];
+        if (ifaceArr) { // Check if array exists
+            for (const iface of ifaceArr) {
+                if (iface.family === 'IPv4' && !iface.internal) {
+                return iface.address;
+                }
+            }
+        }
+      }
+      return 'localhost'; // Fallback
+    }
+
 
     // ========================
     // PROGRAM SETUP
@@ -73,23 +117,23 @@ const createApp = require(path.resolve(__dirname, '../lib/create-app.cjs'));
           { padding: 1, borderColor: 'blue' }
         )
       )
-      .addHelpText('after', 
+      .addHelpText('after',
         boxen(
           highlightStyle('Command Categories:\n') +
           '\n' + primaryColor('🏗️   Project Setup:') +
           '\n  banana create-project       Initialize new project' +
-          '\n  banana create-app           Create new App' +
-          '\n  banana create-app appname --vue    Create new App with Vue template' +
-          '\n  banana create-app appname --react  Create new App with React Template' +
-          '\n  banana create-app appname --docs  Create new App with Docs Template' +
+          '\n  banana create-app           Create new App (defaults to react)' +
+          '\n  banana create-app <name> --vue    Create new App with Vue template' +
+          '\n  banana create-app <name> --react  Create new App with React Template' +
+          '\n  banana create-app <name> --docs   Create new App with Docs Template' +
           '\n\n' + primaryColor('🚀 Development:') +
-          '\n  banana dev          Start development server' +
-          '\n  banana start        Start production server' +
+          '\n  banana dev                  Start development server' +
+          '\n  banana start                Start production server' +
           '\n\n' + primaryColor('📦 Build & Deploy:') +
-          '\n  banana build        Compile for production' +
-          '\n  banana build --css  Build only CSS assets' +
-          '\n  banana serve        Serve production build' +
-          '\n\n' + highlightStyle('Run ') + commandStyle('banana [command] --help') + 
+          '\n  banana build                Compile project for production' +
+          // '\n  banana build --css          Build only CSS assets' + // Keep commented if build script doesn't support it yet
+          '\n  banana serve                Serve production build locally' +
+          '\n\n' + highlightStyle('Run ') + commandStyle('banana [command] --help') +
           highlightStyle(' for detailed usage'),
           { padding: 1, borderColor: 'magenta' }
         )
@@ -106,7 +150,7 @@ const createApp = require(path.resolve(__dirname, '../lib/create-app.cjs'));
       .action((projectName, options) => {
         showBanner();
         console.log(primaryColor('\n🚀 Launching project creation...\n'));
-        
+
         const projectDir = path.join(process.cwd(), projectName);
         const template = options.template.toLowerCase();
         const packageManager = options.yarn ? 'yarn' : 'npm';
@@ -116,14 +160,22 @@ const createApp = require(path.resolve(__dirname, '../lib/create-app.cjs'));
           process.exit(1);
         }
 
-        const templateDir = path.join(__dirname, `templates/${template}`);
+        // Assuming templates are relative to the bin directory structure
+        const templateDir = path.resolve(__dirname, '..', 'templates', template);
         if (!fs.existsSync(templateDir)) {
-          console.error(errorStyle(`✖ Template "${template}" not available.`));
+          console.error(errorStyle(`✖ Template directory not found at: ${templateDir}`));
+          console.error(errorStyle(`  (Looking for template: "${template}")`));
           process.exit(1);
         }
 
         console.log(highlightStyle(`⚙️  Creating ${template} project in ${projectDir}...`));
-        fs.copySync(templateDir, projectDir);
+        try {
+            fs.copySync(templateDir, projectDir);
+        } catch (copyError) {
+            console.error(errorStyle(`✖ Failed to copy template files:`), copyError);
+            process.exit(1);
+        }
+
 
         console.log(successStyle('\n✔ Project created successfully!\n'));
         console.log(boxen(
@@ -134,12 +186,12 @@ const createApp = require(path.resolve(__dirname, '../lib/create-app.cjs'));
           { padding: 1, borderColor: 'green' }
         ));
       })
-      .addHelpText('after', 
+      .addHelpText('after',
         boxen(
           highlightStyle('Examples:') +
-          `\n\n${commandStyle('banana create my-app')}` +
-          `\n${commandStyle('banana create my-app --template vue')}` +
-          `\n${commandStyle('banana create my-app --yarn')}`,
+          `\n\n${commandStyle('banana create-project my-app')}` +
+          `\n${commandStyle('banana create-project my-app --template vue')}` +
+          `\n${commandStyle('banana create-project my-app --yarn')}`,
           { padding: 1, borderColor: 'yellow' }
         )
       );
@@ -149,35 +201,49 @@ const createApp = require(path.resolve(__dirname, '../lib/create-app.cjs'));
     // ========================
     program
       .command('create-app <app-name>')
-      .description('Create a new application')
-      .option('--react', 'Use React template', true)
-      .option('--vue', 'Use Vue template', true)
-      .option('--docs', 'Use Docs template', true)
+      .description('Create a new application within the current project')
+      .option('--react', 'Use React template (default)')
+      .option('--vue', 'Use Vue template')
+      .option('--docs', 'Use Docs template')
       .action(async (appName, options) => {
+        showBanner();
+        console.log(primaryColor('\n✨ Creating new application...\n'));
         try {
           console.log('📋 Received options:', options);
-          
-          let template;
-          if (options.react) {
-            template = 'react';
-            console.log('⚛️  Using React template');
-          } else if (options.vue) {
+
+          let template = 'react'; // Default
+          if (options.vue) {
             template = 'vue';
             console.log('🖖 Using Vue template');
-          } else {
+          } else if (options.docs) {
             template = 'docs';
             console.log('📚 Using Docs template');
+          } else {
+             console.log('⚛️  Using React template (default)');
           }
 
-          const { appDir } = await createApp(appName, template);
-          
-          console.log(`✨ Successfully created ${template} app at:`);
-          console.log(`📂 ${appDir}`);
-          console.log('🎉 Done! Happy coding!');
-          
+          if (typeof createApp !== 'function') {
+              throw new Error('createApp module is not loaded correctly.');
+          }
+
+          const result = await createApp(appName, template);
+
+          if (!result || typeof result.appDir !== 'string') {
+              console.error(errorStyle('✖ Invalid response received from createApp module. Expected { appDir: "path" }.'));
+              console.error('Received:', result);
+              process.exit(1);
+          }
+          const { appDir } = result;
+          const relativeAppDir = path.relative(process.cwd(), appDir);
+
+          console.log(successStyle(`\n✔ Successfully created ${template} app at:`));
+          console.log(highlightStyle(`  ${relativeAppDir}`));
+          console.log('\n🎉 Done! Happy coding!');
+
         } catch (err) {
-          console.error(`❌ Error: ${err.message}`);
-          console.error('💡 Tip: Check your permissions and try again');
+          console.error(errorStyle(`✖ Error creating application:`), err.message);
+          console.error(errorStyle(err.stack || ''));
+          console.error('\n💡 Tip: Check file permissions and ensure the app name is valid.');
           process.exit(1);
         }
       });
@@ -190,236 +256,350 @@ const createApp = require(path.resolve(__dirname, '../lib/create-app.cjs'));
       .description('Start development server with hot reload')
       .option('-p, --port <port>', 'Port to run on', '5000')
       .option('--open', 'Open browser automatically', false)
+      .option('--host <host>', 'Host to bind to (e.g., 0.0.0.0 for network access)', 'localhost') // Allow specifying host
       .action((options) => {
-        showBanner();
-        const startTime = Date.now();
-        console.log(primaryColor('\n⚡ Starting development server...\n'));
+        try {
+          showBanner();
+          const startTime = Date.now();
+          console.log(primaryColor('\n⚡ Starting development server...\n'));
 
-        const serverPath = path.join(__dirname, 'server.cjs');
-        const env = {
-          ...process.env,
-          NODE_ENV: 'development',
-          PORT: options.port,
-          OPEN_BROWSER: options.open ? 'true' : 'false'
-        };
+          const currentDir = process.cwd();
+          console.log(highlightStyle(`🔎 Working Directory: ${currentDir}`));
 
-        const serverProcess = spawn('node', [serverPath], { 
-          stdio: 'inherit',
-          env 
-        });
+          const publicDir = path.join(currentDir, 'public');
+          const srcDir = path.join(currentDir, 'src');
 
-        serverProcess.on('error', (err) => {
-          console.error(errorStyle('✖ Failed to start server:'), err);
-          process.exit(1);
-        });
-
-        serverProcess.on('close', (code) => {
-          if (code === 0) {
-            const endTime = Date.now();
-            console.log(successStyle(`\n✔ Server ready in ${endTime - startTime}ms`));
-            console.log(boxen(
-              highlightStyle('Development server running:') +
-              `\n\n${commandStyle(`Local:   http://localhost:${options.port}/`)}` +
-              `\n${commandStyle('Network: use --host to expose')}` +
-              `\n\n${optionStyle('Press h + enter for help menu')}`,
-              { padding: 1, borderColor: 'blue' }
-            ));
-          } else {
-            console.error(errorStyle(`✖ Server crashed with code ${code}`));
-            process.exit(code);
+          if (!fs.existsSync(publicDir)) {
+            console.error(errorStyle(`✖ Public directory not found at expected path: ${publicDir}`));
+            console.error(errorStyle(`  Please ensure a 'public' directory exists in your project.`));
+            process.exit(1);
           }
-        });
-      });
+          let srcDirExists = fs.existsSync(srcDir);
+          if (!srcDirExists) {
+            console.warn(warnStyle(`⚠️ Source directory not found at expected path: ${srcDir}`));
+            console.warn(warnStyle(`  HMR for source files might not work.`));
+          } else {
+             console.log(highlightStyle(`🔧 Source files directory: ${srcDir}`));
+          }
+          console.log(highlightStyle(`📂 Public assets directory: ${publicDir}`));
+
+
+          const serverPath = path.resolve(__dirname, 'server.cjs');
+          if (!fs.existsSync(serverPath)) {
+              console.error(errorStyle(`✖ Critical Error: Server script not found at ${serverPath}`));
+              process.exit(1);
+          }
+
+          const env = {
+            ...process.env,
+            NODE_ENV: 'development',
+            PORT: options.port,
+            HOST: options.host,
+            PROJECT_ROOT: currentDir,
+            PUBLIC_DIR: publicDir,
+            SRC_DIR: srcDirExists ? srcDir : '', // Pass empty string if src doesn't exist
+            OPEN_BROWSER: options.open ? 'true' : 'false'
+          };
+
+          console.log(highlightStyle(`🚀 Spawning server process: node ${path.relative(currentDir, serverPath)}`));
+          console.log(highlightStyle(`   Environment: NODE_ENV=${env.NODE_ENV}, PORT=${env.PORT}, HOST=${env.HOST}`));
+          console.log(highlightStyle(`   PROJECT_ROOT=${env.PROJECT_ROOT}`));
+          console.log(highlightStyle(`   PUBLIC_DIR=${env.PUBLIC_DIR}`));
+          console.log(highlightStyle(`   SRC_DIR=${env.SRC_DIR || 'N/A'}`));
+
+
+          const serverProcess = spawn('node', [serverPath], {
+            stdio: 'inherit',
+            env
+          });
+
+          serverProcess.on('error', (err) => {
+            console.error(errorStyle('✖ Failed to start server process:'), err);
+            process.exit(1);
+          });
+
+          serverProcess.on('close', (code) => {
+            if (code !== 0 && code !== null) {
+              console.error(errorStyle(`\n✖ Server process exited unexpectedly with code ${code}`));
+              // Don't exit CLI here, let user see server errors
+            } else {
+               console.log(chalk.gray(`\nServer process finished (Code: ${code}).`));
+            }
+          });
+
+        } catch (err) {
+          console.error(errorStyle('✖ Failed to initiate development server startup:'), err);
+          process.exit(1);
+        }
+      })
+      .addHelpText('after',
+        boxen(
+          highlightStyle('Development Server Options:') +
+          `\n\n${commandStyle('banana dev')} ${optionStyle('# Basic development server')}` +
+          `\n${commandStyle('banana dev --port 3000')} ${optionStyle('# Custom port')}` +
+          `\n${commandStyle('banana dev --open')} ${optionStyle('# Auto-open browser')}` +
+          `\n${commandStyle('banana dev --host 0.0.0.0')} ${optionStyle('# Expose to local network')}` +
+          `\n\n${highlightStyle('Features:')}` +
+          `\n- Hot module replacement (if src/ exists)` +
+          `\n- Live reload` +
+          `\n- Serves content from public/`,
+          { padding: 1, borderColor: 'cyan' }
+        )
+      );
 
     // ========================
     // COMMAND: START
     // ========================
     program
       .command('start')
-      .description('Start production server')
+      .description('Start production server (serves dist/ or public/)')
       .option('-p, --port <port>', 'Port to run on', '4200')
+      .option('--host <host>', 'Host to bind to (e.g., 0.0.0.0 for network access)', 'localhost')
       .action((options) => {
-        showBanner();
-        const startTime = Date.now();
-        console.log(primaryColor('\n🚀 Launching production server...\n'));
+        try {
+          showBanner();
+          const startTime = Date.now();
+          console.log(primaryColor('\n🚀 Launching production server...\n'));
 
-        const serverPath = path.join(__dirname, 'server.cjs');
-        const env = {
-          ...process.env,
-          NODE_ENV: 'production',
-          PORT: options.port
-        };
+          const currentDir = process.cwd();
+          console.log(highlightStyle(`🔎 Working Directory: ${currentDir}`));
 
-        const serverProcess = spawn('node', [serverPath], {
-          stdio: 'inherit',
-          env
-        });
+          const distDir = path.join(currentDir, 'dist');
+          const publicDir = path.join(currentDir, 'public');
+          let serveDir = '';
 
-        serverProcess.on('error', (err) => {
-          console.error(errorStyle('✖ Failed to start server:'), err);
-          process.exit(1);
-        });
-
-        serverProcess.on('close', (code) => {
-          if (code === 0) {
-            console.log(successStyle(`\n✔ Production server ready in ${Date.now() - startTime}ms`));
-            console.log(boxen(
-              highlightStyle('Production server running:') +
-              `\n\n${commandStyle(`Listening on port ${options.port}`)}` +
-              `\n\n${optionStyle('Press CTRL+C to stop')}`,
-              { padding: 1, borderColor: 'green' }
-            ));
+          if (fs.existsSync(distDir)) {
+            serveDir = distDir;
+            console.log(highlightStyle(`📦 Found production build in: ${distDir}`));
+          } else if (fs.existsSync(publicDir)) {
+            serveDir = publicDir;
+             console.log(highlightStyle(`📂 Serving fallback public directory: ${publicDir}`));
+             console.log(warnStyle(`   (Recommended: Run 'banana build' first for production)`));
           } else {
-            console.error(errorStyle(`✖ Server crashed with code ${code}`));
-            process.exit(code);
+            console.error(errorStyle(`✖ Cannot start server: Neither 'dist' nor 'public' directory found in ${currentDir}`));
+            console.error(errorStyle(`  Please run 'banana build' or ensure a 'public' directory exists.`));
+            process.exit(1);
           }
-        });
-      });
+
+          console.log(highlightStyle(`📂 Serving content from: ${serveDir}`));
+
+          const serverPath = path.resolve(__dirname, 'server.cjs');
+           if (!fs.existsSync(serverPath)) {
+              console.error(errorStyle(`✖ Critical Error: Server script not found at ${serverPath}`));
+              process.exit(1);
+          }
+
+          const env = {
+            ...process.env,
+            NODE_ENV: 'production',
+            PORT: options.port,
+            HOST: options.host,
+            PROJECT_ROOT: currentDir,
+            PUBLIC_DIR: serveDir,
+            // SRC_DIR is not needed for production
+          };
+
+          console.log(highlightStyle(`🚀 Spawning server process: node ${path.relative(currentDir, serverPath)}`));
+          console.log(highlightStyle(`   Environment: NODE_ENV=${env.NODE_ENV}, PORT=${env.PORT}, HOST=${env.HOST}`));
+          console.log(highlightStyle(`   PROJECT_ROOT=${env.PROJECT_ROOT}`));
+          console.log(highlightStyle(`   PUBLIC_DIR=${env.PUBLIC_DIR}`));
+
+
+          const serverProcess = spawn('node', [serverPath], {
+            stdio: 'inherit',
+            env
+          });
+
+          serverProcess.on('error', (err) => {
+            console.error(errorStyle('✖ Failed to start server process:'), err);
+            process.exit(1);
+          });
+
+          serverProcess.on('close', (code) => {
+             if (code !== 0 && code !== null) {
+              console.error(errorStyle(`\n✖ Server process exited unexpectedly with code ${code}`));
+            } else {
+               console.log(chalk.gray(`\nServer process finished (Code: ${code}).`));
+            }
+          });
+
+        } catch (err) {
+          console.error(errorStyle('✖ Failed to initiate production server startup:'), err);
+          process.exit(1);
+        }
+      })
+      .addHelpText('after',
+        boxen(
+          highlightStyle('Production Server Options:') +
+          `\n\n${commandStyle('banana start')} ${optionStyle('# Basic production server')}` +
+          `\n${commandStyle('banana start --port 3000')} ${optionStyle('# Custom port')}` +
+          `\n${commandStyle('banana start --host 0.0.0.0')} ${optionStyle('# Expose to local network')}` +
+          `\n\n${highlightStyle('Features:')}` +
+          `\n- Serves from ${commandStyle('dist/')} if available` +
+          `\n- Falls back to ${commandStyle('public/')}` +
+          `\n- Optimized for production`,
+          { padding: 1, borderColor: 'magenta' }
+        )
+      );
+
 
     // ========================
     // COMMAND: BUILD
     // ========================
     program
       .command('build')
-      .description('Compile project for production')
-      .option('--css', 'Build only CSS assets')
-      .option('--analyze', 'Generate bundle analysis')
+      .description('Compile project for production using build script')
+      // Add specific build options here if needed, e.g., --analyze
+      // .option('--analyze', 'Generate bundle analysis')
       .action(async (options) => {
         showBanner();
         console.log(primaryColor('\n🔨 Building project for production...\n'));
 
-        if (options.css) {
-          console.log(highlightStyle('⚙️  Processing CSS assets...'));
-          try {
-            const tailwindBin = path.join(__dirname, 'node_modules', '.bin', 'tailwindcss');
-            const isWindows = process.platform === 'win32';
-            const tailwindCommand = isWindows ? `${tailwindBin}.cmd` : tailwindBin;
-            
-            const tailwindProcess = spawn(tailwindCommand, [
-              'build',
-              'public/styles/main.css',
-              '-o',
-              'public/styles/banana.css'
-            ], { 
-              stdio: 'inherit',
-              shell: isWindows
-            });
+        const buildScriptPath = path.resolve(__dirname, 'build.cjs'); // Path to your build script
 
-            tailwindProcess.on('close', (code) => {
-              if (code === 0) {
-                console.log(successStyle('\n✔ CSS compiled successfully!'));
-              } else {
-                console.error(errorStyle(`✖ CSS compilation failed (code ${code})`));
-                process.exit(code);
-              }
-            });
-          } catch (err) {
-            console.error(errorStyle('✖ CSS compilation error:'), err);
+        if (!fs.existsSync(buildScriptPath)) {
+            console.error(errorStyle(`✖ Build script not found at: ${buildScriptPath}`));
+            console.error(errorStyle(`  Please ensure 'build.cjs' exists in the 'bin' directory.`));
             process.exit(1);
-          }
-        } else {
-          const buildPath = path.join(__dirname, 'build.cjs');
-          const env = {
-            ...process.env,
-            ANALYZE_BUNDLE: options.analyze ? 'true' : 'false'
-          };
-
-          const buildProcess = spawn('node', [buildPath], { 
-            stdio: 'inherit',
-            env
-          });
-
-          buildProcess.on('close', (code) => {
-            if (code === 0) {
-              console.log(successStyle('\n✔ Production build complete!'));
-              console.log(boxen(
-                highlightStyle('Next steps:') +
-                `\n\n${commandStyle('banana serve')} ${optionStyle('# Test production build')}` +
-                `\n${commandStyle('banana start')} ${optionStyle('# Run production server')}`,
-                { padding: 1, borderColor: 'green' }
-              ));
-            } else {
-              console.error(errorStyle(`✖ Build failed (code ${code})`));
-              process.exit(code);
-            }
-          });
         }
+
+        console.log(highlightStyle(`🚀 Executing build script: node ${path.relative(process.cwd(), buildScriptPath)}`));
+
+        // Prepare environment for the build script (e.g., pass options)
+        const buildEnv = {
+            ...process.env,
+            NODE_ENV: 'production', // Ensure build runs in production mode
+            // Pass other options if the build script uses them
+            // ANALYZE_BUNDLE: options.analyze ? 'true' : 'false',
+        };
+
+        const buildProcess = spawn('node', [buildScriptPath], {
+            stdio: 'inherit', // Show build output directly
+            env: buildEnv,
+            cwd: process.cwd() // Ensure build runs in the correct project directory
+        });
+
+        buildProcess.on('error', (err) => {
+            console.error(errorStyle('✖ Failed to start build process:'), err);
+            process.exit(1);
+        });
+
+        buildProcess.on('close', (code) => {
+            if (code === 0) {
+                console.log(successStyle('\n✔ Build process completed successfully!'));
+                // You can add next steps guidance here if needed
+                console.log(boxen(
+                    highlightStyle('Next steps:') +
+                    `\n\n${commandStyle('banana serve')} ${optionStyle('# Test production build locally')}` +
+                    `\n${commandStyle('banana start')} ${optionStyle('# Run production server')}`,
+                    { padding: 1, borderColor: 'green' }
+                ));
+            } else {
+                console.error(errorStyle(`\n✖ Build process failed with exit code ${code}`));
+                process.exit(code); // Exit CLI with the build's error code
+            }
+        });
       });
+
 
     // ========================
     // COMMAND: SERVE
     // ========================
     program
       .command('serve')
-      .description('Serve production build locally')
+      .description('Serve a directory locally (uses `npx serve`)')
       .option('-p, --port <port>', 'Port to serve on', '5000')
-      .option('--dir <directory>', 'Directory to serve', 'dist')
+      .option('--dir <directory>', 'Directory to serve (default: dist/ or public/)', '')
       .action(async (options) => {
         try {
           showBanner();
-          const serveMessage = `🌐 Serving ${options.dir} on port ${options.port}...`;
-          console.log(primaryColor(`\n${serveMessage}\n`));
 
-          if (!fs.existsSync(options.dir)) {
-            console.error(errorStyle(`✖ Directory "${options.dir}" not found`));
+          const currentDir = process.cwd();
+          let serveDir = options.dir ? path.resolve(currentDir, options.dir) : '';
+
+          if (!serveDir) {
+              const distDir = path.join(currentDir, 'dist');
+              const publicDir = path.join(currentDir, 'public');
+              if (fs.existsSync(distDir)) {
+                  serveDir = distDir;
+              } else if (fs.existsSync(publicDir)) {
+                  serveDir = publicDir;
+              } else {
+                  console.error(errorStyle(`✖ Cannot serve: Neither 'dist/' nor 'public/' directory found in ${currentDir}.`));
+                  console.error(errorStyle(`  Specify a directory with --dir or run 'banana build'.`));
+                  process.exit(1);
+              }
+          }
+
+          if (!fs.existsSync(serveDir)) {
+            console.error(errorStyle(`✖ Directory to serve not found: "${serveDir}"`));
             process.exit(1);
           }
 
-          const serveArgs = ['serve', options.dir, '-l', options.port];
-          let serveProcess;
-          
-          try {
-            serveProcess = spawn('serve', serveArgs.slice(1), {
-              stdio: 'inherit',
-              shell: true
-            });
-          } catch (npxError) {
-            console.log('Falling back to npx...');
-            serveProcess = spawn('npx', serveArgs, {
-              stdio: 'inherit',
-              shell: true
-            });
-          }
+          const relativeServeDir = path.relative(currentDir, serveDir);
+          const serveCommand = 'npx';
+          // Ensure directory path with spaces is handled correctly if needed (though unlikely for dist/public)
+          const serveArgs = ['serve', serveDir, '-l', options.port];
+
+          console.log(primaryColor(`\n🌐 Serving ${highlightStyle(relativeServeDir)} using '${serveCommand} serve' on port ${options.port}...\n`));
+
+          const serveProcess = spawn(serveCommand, serveArgs, {
+            stdio: 'inherit',
+            shell: true // Often needed for npx, especially on Windows
+          });
 
           serveProcess.on('error', (err) => {
-            console.error(errorStyle('✖ Failed to start server:'), err);
-            console.log('\nTry installing serve first:');
-            console.log(commandStyle('npm install -g serve'));
+            console.error(errorStyle(`✖ Failed to start '${serveCommand} serve':`), err);
+            console.error(errorStyle(`  Ensure you have Node.js and npm/npx installed and in your PATH.`));
             process.exit(1);
           });
 
           serveProcess.on('close', (code) => {
-            if (code !== 0) {
-              console.error(errorStyle(`✖ Server exited with code ${code}`));
-              process.exit(code);
+            if (code !== 0 && code !== null) {
+              console.error(errorStyle(`✖ Serve process exited unexpectedly with code ${code}`));
+            } else {
+                console.log(chalk.gray(`\nServe process finished (Code: ${code}).`));
             }
           });
 
         } catch (err) {
-          console.error(errorStyle('✖ Unexpected error:'), err);
+          console.error(errorStyle('✖ Unexpected error during serve command:'), err);
           process.exit(1);
         }
       })
-      .addHelpText('after', `
-Examples:
-  ${commandStyle('banana serve')}
-  ${commandStyle('banana serve --port 5000 --dir public')}
+      .addHelpText('after',
+        boxen(
+          highlightStyle('Examples:') +
+          `\n\n${commandStyle('banana serve')} ${optionStyle('# Serve dist/ or public/')}` +
+          `\n${commandStyle('banana serve --port 3000')} ${optionStyle('# Custom port')}` +
+          `\n${commandStyle('banana serve --dir ./build')} ${optionStyle('# Specific directory')}` +
+          `\n\n${highlightStyle('Note:')} Uses ${commandStyle('npx serve')}. No local installation needed.`,
+          { padding: 1, borderColor: 'blue' }
+        )
+      );
 
-Note: Requires 'serve' package. Install with:
-  ${commandStyle('npm install -g serve')}
-`);
+    // Show help if no command provided or unknown command
+    program.on('command:*', (operands) => {
+        console.error(errorStyle(`Invalid command: ${operands[0]}\n`));
+        program.help();
+        process.exit(1);
+    });
 
-    // Show help if no command provided
     if (process.argv.length < 3) {
       showBanner();
       program.help();
+    } else {
+       // Parse arguments
+       program.parse(process.argv);
     }
 
-    // Parse arguments
-    program.parse(process.argv);
 
   } catch (err) {
-    console.error('❌ CLI Error:', err.message);
+    // Catch errors during async setup (imports, etc.)
+    // Ensure chalk is loaded before using errorStyle
+    const errorStyle = chalk ? chalk.bold.red : (text) => text; // Fallback if chalk failed
+    console.error(errorStyle('❌ CLI Initialization Error:'), err.message);
+    console.error(err.stack || '');
     process.exit(1);
   }
-})();
+})(); // Immediately invoke the async function

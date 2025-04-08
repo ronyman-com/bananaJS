@@ -1,102 +1,93 @@
+<!-- Your existing index.html content -->
 <!DOCTYPE html>
-  <html lang="en" prefix="og: https://ogp.me/ns#">
-  <head>
-    <!-- Primary Meta Tags -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Banana.js - A modern, fast, and lightweight JavaScript framework for building web applications">
-    <meta name="keywords" content="JavaScript framework, BananaJS, frontend, web development, Rony MAN">
-    <meta name="author" content="Rony MAN">
-    <meta name="robots" content="index, follow">
-    
-    <!-- Open Graph / Facebook Meta Tags -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://bananajs.com/">
-    <meta property="og:title" content="Banana.js - Modern JavaScript Framework">
-    <meta property="og:description" content="A modern, fast, and lightweight JavaScript framework for building web applications">
-    <meta property="og:image" content="https://bananajs.com/images/bananajs-social.jpg">
-    
-    <!-- Twitter Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="https://bananajs.com/">
-    <meta name="twitter:title" content="Banana.js - Modern JavaScript Framework">
-    <meta name="twitter:description" content="A modern, fast, and lightweight JavaScript framework for building web applications">
-    <meta name="twitter:image" content="https://bananajs.com/images/bananajs-social.jpg">
-    <meta name="twitter:creator" content="@ronyman">
-  
-    <!-- Favicon and App Icons -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-    <link rel="manifest" href="/site.webmanifest">
-  
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://bananajs.com/">
-  
-    <!-- Structured Data (JSON-LD) -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "Banana.js",
-        "url": "https://bananajs.com/",
-        "description": "A modern JavaScript framework for building web applications",
-        "applicationCategory": "DeveloperApplication",
-        "operatingSystem": "Web",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        },
-        "author": {
-          "@type": "Person",
-          "name": "Rony MAN",
-          "url": "https://www.ronyman.com/"
-        }
-      }
-    </script>
-  
-    <!-- Preload Critical Resources -->
-    <link rel="preload" href="/styles/banana.css" as="style">
-    <link rel="preload" href="/main.js" as="script">
-    
-    <!-- CSS -->
-    <link rel="stylesheet" href="/styles/banana.css">
-    <style>
-      /* Critical CSS - Inline for faster initial render */
-      .bg-banana-yellow { background-color: #FFEB3B; }
-      .text-banana-black { color: #000000; }
-      #app { min-height: 100vh; display: flex; flex-direction: column; }
-      nav { background-color: #000; color: #FFEB3B; padding: 1rem; }
-      footer { background-color: #000; color: #FFEB3B; padding: 1.5rem; }
-      
-      /* Dark mode support */
-      @media (prefers-color-scheme: dark) {
-        :root {
-          color-scheme: dark light;
-        }
-      }
-    </style>
-  </head>
-  <body class="bg-banana-yellow text-banana-black">
-    <!-- Your existing body content remains exactly the same -->
-    <div id="app" class="min-h-screen flex flex-col">
-      <!-- Navbar, Hero Section, Footer - Keep all existing content -->
-    </div>
-    
-    <!-- Scripts -->
-    <script type="module" src="/main.js"></script>
- 
+<html lang="en" prefix="og: https://ogp.me/ns#">
+<head>
+  <!-- Primary Meta Tags -->
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Banana.js App</title>
-  <link rel="stylesheet" href="/styles/banana.css"> <!-- Ensure this path is correct -->
+  <meta name="description" content="Banana.js - A modern, fast, and lightweight JavaScript framework for building web applications">
+  <meta name="keywords" content="JavaScript framework, BananaJS, frontend, web development, Rony MAN">
+  <meta name="author" content="Rony MAN">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph / Facebook Meta Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://bananajs.com/">
+  <meta property="og:title" content="Banana.js - Modern JavaScript Framework">
+  <meta property="og:description" content="A modern, fast, and lightweight JavaScript framework for building web applications">
+  <meta property="og:image" content="/bananajs_social.jpg"> <!-- Assuming this image exists in public/ -->
+
+  <!-- Twitter Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://bananajs.com/">
+  <meta name="twitter:title" content="Banana.js - Modern JavaScript Framework">
+  <meta name="twitter:description" content="A modern, fast, and lightweight JavaScript framework for building web applications">
+  <meta name="twitter:image" content="/bananajs_social.jpg"> <!-- Assuming this image exists in public/ -->
+  <meta name="twitter:creator" content="@ronyman">
+
+  <!-- Favicon and App Icons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://bananajs.com/">
+
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Banana.js",
+      "url": "https://bananajs.com/",
+      "description": "A modern JavaScript framework for building web applications",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Rony MAN",
+        "url": "https://www.ronyman.com/"
+      }
+    }
+  </script>
+
+  <!-- Preload Critical Resources -->
+  <link rel="preload" href="/styles/banana.css" as="style">
+  <link rel="preload" href="/main.js" as="script">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/styles/banana.css">
   <style>
-    /* Custom Banana.js brand colors */
-    .bg-banana-yellow {
-      background-color: #FFEB3B; /* Banana yellow */
+    /* Critical CSS - Inline for faster initial render */
+    .bg-banana-yellow { background-color: #FFEB3B; }
+    .text-banana-black { color: #000000; }
+    #app { min-height: 100vh; display: flex; flex-direction: column; }
+    nav { background-color: #000; color: #FFEB3B; padding: 1rem; }
+    footer { background-color: #000; color: #FFEB3B; padding: 1.5rem; }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark light;
+      }
+      /* Add dark mode specific critical styles if needed */
+      body.dark { background-color: #1a1a1a; color: #f0f0f0; }
+      body.dark nav { background-color: #111; color: #FFEB3B; }
+      body.dark footer { background-color: #111; color: #FFEB3B; }
+      body.dark .bg-black { background-color: #222; } /* Adjust dark theme colors */
+      body.dark .text-banana-yellow { color: #FFEB3B; }
+      body.dark .hover\:bg-gray-900:hover { background-color: #333; }
+      body.dark .hover\:bg-banana-dark-yellow:hover { background-color: #FBC02D; } /* Darker yellow for dark hover */
+      body.dark .border-banana-yellow { border-color: #FFEB3B; }
+      body.dark .text-black { color: #1a1a1a; } /* Ensure text on yellow is dark */
     }
-    .text-banana-black {
-      color: #000000; /* Black */
-    }
+
+    /* Custom Banana.js brand colors (already defined inline) */
     .hover\:bg-banana-dark-yellow:hover {
       background-color: #FDD835; /* Darker yellow for hover */
     }
@@ -104,10 +95,13 @@
       border-color: #FFEB3B; /* Yellow border */
     }
     .flex .logo-larg{
-      width: 200px;
-      align-items: center;
+      width: 200px; /* Consider using Tailwind classes like w-48 or w-52 */
+      margin-left: auto; /* Center using auto margins */
+      margin-right: auto;
+      display: block; /* Ensure it behaves like a block for centering */
     }
   </style>
+  <title>Banana.js - Modern JavaScript Framework</title> <!-- Single Title Tag -->
 </head>
 <body class="bg-banana-yellow text-banana-black">
   <div id="app" class="min-h-screen flex flex-col">
@@ -115,101 +109,134 @@
     <nav class="bg-black text-banana-yellow p-4">
       <div class="container mx-auto flex justify-between items-center">
         <div class="flex items-center">
-          <img src="/bananajs_logo.jpg" alt="Banana.js Logo" class="h-8 mr-2" /> <!-- Correct path -->
+          <img src="/bananajs_logo.jpg" alt="Banana.js Logo" class="h-8 mr-2" />
           <span class="text-2xl font-bold">Banana.js</span>
         </div>
         <div class="flex items-center space-x-4">
-          <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-800">
-            🌙
+          <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-banana-yellow">
+            🌙 <!-- Initial state -->
           </button>
           <a
             href="https://github.com/ronyman-com/bananaJS"
             target="_blank"
+            rel="noopener noreferrer"
             class="flex items-center space-x-1 hover:underline"
           >
-            <img src="/github-icon.svg" alt="GitHub" class="h-6" /> <!-- Correct path -->
-            <span id="github-stars">Loading stars...</span>
+            <img src="/github-icon.svg" alt="GitHub" class="h-6" />
+            <span id="github-stars">...</span> <!-- Placeholder -->
           </a>
         </div>
       </div>
     </nav>
 
     <!-- Hero Section -->
-    <div class="flex-1 flex items-center justify-center">
-      <div class="text-center">
-          <img src="/bananajs_logo.jpg" alt="Banana.js Logo" class="logo-larg container mx-auto text-center" /> <!-- Correct path -->
-        <h1 class="text-6xl font-bold mb-4">Welcome to Banana.js</h1>
-        <p class="text-xl mb-8">
+    <main class="flex-1 flex items-center justify-center py-12"> <!-- Added main tag and padding -->
+      <div class="text-center px-4"> <!-- Added padding for smaller screens -->
+          <img src="/bananajs_logo.jpg" alt="Banana.js Logo" class="logo-larg mb-6" /> <!-- Added margin-bottom -->
+        <h1 class="text-4xl md:text-6xl font-bold mb-4">Welcome to Banana.js</h1> <!-- Responsive text size -->
+        <p class="text-lg md:text-xl mb-8">
           A modern, fast, and lightweight JavaScript framework for building web applications.
         </p>
-        <div class="space-x-4">
+        <div class="flex flex-wrap justify-center gap-4"> <!-- Flex wrap and gap for buttons -->
           <a
-            href="https://bananajs.com//getting-started"
-            class="bg-black text-banana-yellow px-6 py-3 rounded-lg hover:bg-gray-900"
+            href="https://bananajs.com/getting-started" <!-- Ensure URL is correct -->
+            class="bg-black text-banana-yellow px-6 py-3 rounded-lg hover:bg-gray-900 transition duration-200"
           >
             Get Started
           </a>
           <a
-            href="https://bananajs.com/features"
-            class="bg-banana-yellow text-black px-6 py-3 rounded-lg hover:bg-banana-dark-yellow border border-banana-yellow"
+            href="https://bananajs.com/features" <!-- Ensure URL is correct -->
+            class="bg-banana-yellow text-black px-6 py-3 rounded-lg hover:bg-banana-dark-yellow border border-black transition duration-200" <!-- Added black border -->
           >
             Explore Features
           </a>
           <a
             href="/dashboard"
-            class="bg-black text-banana-yellow px-6 py-3 rounded-lg hover:bg-gray-900"
+            class="bg-black text-banana-yellow px-6 py-3 rounded-lg hover:bg-gray-900 transition duration-200"
           >
             Create from Browser
           </a>
         </div>
       </div>
-    </div>
+    </main>
 
     <!-- Footer -->
     <footer class="bg-black text-banana-yellow p-6">
       <div class="container mx-auto text-center">
         <p>&copy; <span id="current-year"></span> Banana.js. All rights reserved.</p>
+         <p class="mt-2"> Project Owned by: <!-- Added margin-top -->
+          <a
+            href="https://www.ronyman.com/" target="_blank" rel="noopener noreferrer"
+            class="hover:underline">
+            Rony MAN
+          </a>
+        </p>
       </div>
-      <p> Project Own by:
-      <a
-    href="https://www.ronyman.com/"
-    class="container mx-auto text-left">
-    Rony MAN</a></p>
     </footer>
   </div>
-  <script type="module" src="/main.js"></script> <!-- Correct path -->
+
+  <!-- Scripts -->
+  <script type="module" src="/main.js"></script>
   <script>
     // Print the current year
     document.getElementById('current-year').textContent = new Date().getFullYear();
 
     // Fetch GitHub stars
-    fetch('https://api.github.com/repos/ronyman-com/bananaJS')
-      .then(response => response.json())
-      .then(data => {
-        document.getElementById('github-stars').textContent = data.stargazers_count;
-      })
-      .catch(error => {
-        console.error('Error fetching GitHub stars:', error);
-        document.getElementById('github-stars').textContent = 'Error loading stars';
-      });
+    function fetchStars() {
+        fetch('https://api.github.com/repos/ronyman-com/bananaJS')
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            const stars = data.stargazers_count !== undefined ? data.stargazers_count : 'N/A';
+            document.getElementById('github-stars').textContent = `${stars} Stars`;
+          })
+          .catch(error => {
+            console.error('Error fetching GitHub stars:', error);
+            document.getElementById('github-stars').textContent = 'N/A Stars';
+          });
+    }
+    fetchStars(); // Initial fetch
 
     // Theme toggle logic
     const themeToggleBtn = document.getElementById('theme-toggle');
     const body = document.body;
+    const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
 
-    // Check for saved theme in localStorage
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      body.classList.add(savedTheme);
-      themeToggleBtn.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+    function applyTheme(theme) {
+        if (theme === 'dark') {
+            body.classList.add('dark');
+            themeToggleBtn.textContent = '☀️'; // Sun icon for dark mode
+        } else {
+            body.classList.remove('dark');
+            themeToggleBtn.textContent = '🌙'; // Moon icon for light mode
+        }
     }
 
+    // Check localStorage first, then system preference
+    let currentTheme = localStorage.getItem('theme');
+    if (!currentTheme) {
+        currentTheme = prefersDarkScheme.matches ? 'dark' : 'light';
+    }
+    applyTheme(currentTheme);
+
+    // Listen for system theme changes
+     prefersDarkScheme.addEventListener('change', (e) => {
+        // Only change if no theme is explicitly set in localStorage
+        if (!localStorage.getItem('theme')) {
+            applyTheme(e.matches ? 'dark' : 'light');
+        }
+    });
+
+    // Handle button click
     themeToggleBtn.addEventListener('click', () => {
-      body.classList.toggle('dark');
-      const isDarkMode = body.classList.contains('dark');
-      localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-      themeToggleBtn.textContent = isDarkMode ? '☀️' : '🌙';
-      console.log('Theme toggled:', isDarkMode ? 'Dark' : 'Light'); // Debugging
+      const newTheme = body.classList.contains('dark') ? 'light' : 'dark';
+      localStorage.setItem('theme', newTheme); // Save user preference
+      applyTheme(newTheme);
+      console.log('Theme toggled to:', newTheme);
     });
   </script>
 </body>
