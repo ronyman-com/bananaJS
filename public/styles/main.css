@@ -1,3 +1,106 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --banana-yellow: 255, 235, 59;    /* #FFEB3B */
+    --banana-dark-yellow: 251, 192, 45; /* #FBC02D */
+    --banana-darker-yellow: 253, 216, 53; /* #FDD835 */
+    --banana-black: 0, 0, 0;          /* #000000 */
+    --banana-dark-bg: 17, 17, 17;     /* #111111 */
+    --banana-darker-bg: 26, 26, 26;   /* #1A1A1A */
+  }
+}
+
+@layer components {
+  /* Banana Color Utilities */
+  .bg-banana-yellow {
+    @apply bg-[rgb(var(--banana-yellow))];
+  }
+  .text-banana-yellow {
+    @apply text-[rgb(var(--banana-yellow))];
+  }
+  .border-banana-yellow {
+    @apply border-[rgb(var(--banana-yellow))];
+  }
+  .bg-banana-dark {
+    @apply bg-[rgb(var(--banana-dark-bg))];
+  }
+
+  /* Button Components */
+  .btn {
+    @apply px-6 py-3 rounded-lg font-medium transition-all duration-200 
+           focus:outline-none focus:ring-2 focus:ring-offset-2 
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn bg-black text-banana-yellow 
+           hover:bg-opacity-90 focus:ring-banana-yellow
+           active:bg-opacity-80;
+  }
+
+  .btn-secondary {
+    @apply btn bg-banana-yellow text-black border border-black
+           hover:bg-[rgb(var(--banana-dark-yellow))] 
+           focus:ring-[rgb(var(--banana-dark-yellow))]
+           active:bg-[rgb(var(--banana-darker-yellow))];
+  }
+
+  .btn-outline {
+    @apply btn bg-transparent border-2 border-banana-yellow text-banana-yellow
+           hover:bg-[rgba(var(--banana-yellow),0.1)]
+           focus:ring-banana-yellow
+           active:bg-[rgba(var(--banana-yellow),0.2)];
+  }
+}
+
+@layer utilities {
+  /* Light mode defaults */
+  body {
+    @apply bg-banana-yellow text-banana-black min-h-screen flex flex-col;
+  }
+  
+  nav, footer {
+    @apply bg-black text-banana-yellow;
+  }
+
+  /* Dark mode overrides */
+  @media (prefers-color-scheme: dark) {
+    body.dark {
+      @apply bg-[rgb(var(--banana-darker-bg))] text-gray-100;
+    }
+    
+    body.dark nav,
+    body.dark footer {
+      @apply bg-[rgb(var(--banana-dark-bg))] text-banana-yellow;
+    }
+    
+    body.dark .btn-primary {
+      @apply bg-[rgb(var(--banana-dark-bg))] text-banana-yellow 
+             hover:bg-opacity-80 focus:ring-banana-yellow;
+    }
+    
+    body.dark .btn-secondary {
+      @apply bg-[rgb(var(--banana-yellow))] text-[rgb(var(--banana-dark-bg))] 
+             hover:bg-[rgb(var(--banana-dark-yellow))] 
+             focus:ring-[rgb(var(--banana-dark-yellow))];
+    }
+    
+    body.dark .btn-outline {
+      @apply text-banana-yellow border-banana-yellow
+             hover:bg-[rgba(var(--banana-yellow),0.1)]
+             active:bg-[rgba(var(--banana-yellow),0.2)];
+    }
+    
+    body.dark .text-black {
+      @apply text-[rgb(var(--banana-dark-bg))];
+    }
+  }
+
+  /* Logo sizing */
+  .logo-large {
+    @apply w-[200px] mx-auto block;
+  }
+}

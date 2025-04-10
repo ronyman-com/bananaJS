@@ -1,5 +1,5 @@
 {
-  "entry": "./src/main.jsx",
+  "entry": "./src/App.jsx",
   "outDir": "dist",
   "esbuild": {
     "minify": true,
@@ -32,7 +32,12 @@
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"],
+  "external": ["react", "react-dom", "react-router-dom"],
   "alias": {
     "@": "./src"
-  }
+  },
+  "postcss": true
 }
+
+
+

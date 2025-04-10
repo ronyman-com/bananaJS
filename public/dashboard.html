@@ -19,11 +19,27 @@
       color: #000;
       margin: 0;
     }
+    .metrics {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      padding: 10px;
+      background-color: #1a1a1a;
+    }
+    .metric {
+      padding: 10px;
+      background-color: #333;
+      border-radius: 5px;
+      min-width: 200px;
+      text-align: center;
+    }
     .file-tree {
       margin: 20px;
       padding: 20px;
       background-color: #1a1a1a;
       border-radius: 8px;
+      max-height: 500px;
+      overflow-y: auto;
     }
     .file-tree ul {
       list-style-type: none;
@@ -32,13 +48,31 @@
     .file-tree li {
       cursor: pointer;
       padding: 5px 0;
+      position: relative;
     }
     .file-tree li.folder {
       font-weight: bold;
       color: #ffeb3b;
     }
+    .file-tree li.folder::before {
+      content: '📁 ';
+    }
     .file-tree li.file {
       color: #fff;
+    }
+    .file-tree li.file::before {
+      content: '📄 ';
+    }
+    .file-tree li .file-actions {
+      display: none;
+      position: absolute;
+      right: 0;
+      background: #333;
+      padding: 2px 5px;
+      border-radius: 3px;
+    }
+    .file-tree li:hover .file-actions {
+      display: inline-block;
     }
     .actions {
       margin: 20px;
@@ -46,21 +80,29 @@
     }
     button {
       background-color: #ffeb3b;
-      color: #000;
+      color: #575050;
       border: none;
       padding: 10px 20px;
       margin: 5px;
       border-radius: 5px;
       cursor: pointer;
       font-size: 16px;
+      font-weight: bold;
     }
     button:hover {
       background-color: #fdd835;
     }
-    select {
+    button:disabled {
+      background-color: #666;
+      cursor: not-allowed;
+    }
+    select, input {
       padding: 10px;
       border-radius: 5px;
       margin: 5px;
+      background-color: #333;
+      color: #ffeb3b;
+      border: 1px solid #ffeb3b;
     }
     .modal {
       display: none;
@@ -73,6 +115,12 @@
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
       z-index: 1000;
+      width: 400px;
+      max-width: 90%;
+    }
+    .modal h3 {
+      margin-top: 0;
+      color: #ffeb3b;
     }
     .modal input, .modal select {
       width: 100%;
@@ -83,202 +131,392 @@
       background-color: #000;
       color: #ffeb3b;
     }
-    .modal button {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .modal-buttons button {
+      flex: 1;
+    }
+    .notification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 5px;
+      background-color: #ffeb3b;
+      color: #000;
+      z-index: 1000;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+      animation: slideIn 0.3s, fadeOut 0.5s 2.5s forwards;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    .error {
+      background-color: #f44336;
+      color: white;
+    }
+    .success {
+      background-color: #4CAF50;
+      color: white;
+    }
+    .back-link {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #333;
+      color: #ffeb3b;
+      text-decoration: none;
+      border-radius: 5px;
+      margin: 10px;
+    }
+    .back-link:hover {
+      background-color: #444;
     }
   </style>
 </head>
 <body>
   <h1>BananaJS Development Dashboard</h1>
-  <!-- public/dashboard.html -->
-<div class="metric">
-  <strong>Build Time:</strong> <span id="build-time">0</span> ms
-</div>
-<div class="metric">
-  <strong>HMR Update Time:</strong> <span id="hmr-update-time">0</span> ms
-</div>
+  
+  <div class="metrics">
+    <div class="metric">
+      <strong>Memory Usage:</strong> <span id="memory">0</span> MB
+    </div>
+    <div class="metric">
+      <strong>CPU Usage:</strong> <span id="cpu">0</span>%
+    </div>
+    <div class="metric">
+      <strong>Build Time:</strong> <span id="build-time">0</span> ms
+    </div>
+    <div class="metric">
+      <strong>HMR Update Time:</strong> <span id="hmr-update-time">0</span> ms
+    </div>
+  </div>
 
-<script>
-  ws.onmessage = (event) => {
-    const message = JSON.parse(event.data);
-    if (message.type === 'metrics') {
-      document.getElementById('memory').textContent = message.data.memory.toFixed(2);
-      document.getElementById('cpu').textContent = message.data.cpu.toFixed(2);
-      document.getElementById('build-time').textContent = message.data.buildTime;
-      document.getElementById('hmr-update-time').textContent = message.data.hmrUpdateTime;
-    }
-  };
-</script>
   <div class="actions">
     <h2>Actions</h2>
     <button onclick="openCreateProjectModal()">Create Project</button>
     <button onclick="openCreateAppModal()">Create App</button>
-    <a
-    href="/"
-    class="actions"
-  >
-    Back to HomePage
-  </a>
-  </div>
-  <div class="file-tree">
-    <h2>File Tree</h2>
-    <ul id="file-tree"></ul>
+    <a href="/" class="back-link">Back to HomePage</a>
   </div>
   
+  <div class="file-tree">
+    <h2>File Tree <button onclick="refreshFileTree()" style="font-size: 12px; padding: 3px 8px;">Refresh</button></h2>
+    <div id="current-path" style="margin-bottom: 10px; color: #aaa;">Current path: /</div>
+    <ul id="file-tree"></ul>
+  </div>
 
   <!-- Create Project Modal -->
   <div id="createProjectModal" class="modal">
     <h3>Create Project</h3>
-    <input type="text" id="projectName" placeholder="Enter project name">
-    <button onclick="createProject()">Create</button>
-    <button onclick="closeModal('createProjectModal')">Cancel</button>
+    <input type="text" id="projectName" placeholder="Enter project name (letters, numbers, hyphens only)">
+    <div class="modal-buttons">
+      <button onclick="createProject()">Create</button>
+      <button onclick="closeModal('createProjectModal')">Cancel</button>
+    </div>
   </div>
 
   <!-- Create App Modal -->
   <div id="createAppModal" class="modal">
     <h3>Create App</h3>
-    <input type="text" id="appName" placeholder="Enter app name">
+    <input type="text" id="appName" placeholder="Enter app name (letters, numbers, hyphens only)">
     <select id="appTemplate">
       <option value="Docs">Docs</option>
       <option value="Vue">Vue</option>
       <option value="React">React</option>
     </select>
-    <button onclick="createApp()">Create</button>
-    <button onclick="closeModal('createAppModal')">Cancel</button>
+    <div class="modal-buttons">
+      <button onclick="createApp()">Create</button>
+      <button onclick="closeModal('createAppModal')">Cancel</button>
+    </div>
   </div>
 
   <script>
-    // WebSocket connection for HMR
-    const ws = new WebSocket('ws://localhost:8080');
-    ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      if (message.type === 'update') {
-        console.log(`File changed: ${message.file}`);
-        loadFileTree(); // Refresh the file tree
-      }
-    };
+    // Global variables
+    let currentDirectory = '';
+    let ws;
+
+    // Initialize WebSocket connection
+    function initWebSocket() {
+      ws = new WebSocket(`ws://${window.location.host}`);
+      
+      ws.onopen = () => {
+        console.log('WebSocket connected');
+        showNotification('Connected to live updates', 'success');
+      };
+      
+      ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        if (message.type === 'metrics') {
+          updateMetrics(message.data);
+        } else if (message.type === 'file-change') {
+          showNotification(`File changed: ${message.file}`, 'info');
+          refreshFileTree();
+        }
+      };
+      
+      ws.onclose = () => {
+        console.log('WebSocket disconnected');
+        showNotification('Disconnected from live updates', 'error');
+        // Attempt to reconnect every 5 seconds
+        setTimeout(initWebSocket, 5000);
+      };
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+    }
+
+    // Update metrics display
+    function updateMetrics(data) {
+      document.getElementById('memory').textContent = data.memory?.toFixed(2) || '0';
+      document.getElementById('cpu').textContent = data.cpu?.toFixed(2) || '0';
+      document.getElementById('build-time').textContent = data.buildTime || '0';
+      document.getElementById('hmr-update-time').textContent = data.hmrUpdateTime || '0';
+    }
+
+    // Show notification
+    function showNotification(message, type = 'info') {
+      const existing = document.querySelector('.notification');
+      if (existing) existing.remove();
+      
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      
+      // Remove after animation
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+    }
 
     // Fetch and display the file tree
     async function loadFileTree(directory = '') {
       try {
-        const response = await fetch(`/api/files?directory=${directory}`);
-        if (!response.ok) throw new Error('Failed to load file tree');
+        currentDirectory = directory;
+        document.getElementById('current-path').textContent = `Current path: ${directory || ''}`;
+        
+        const encodedDir = encodeURIComponent(directory);
+        const response = await fetch(`/api/files?directory=${encodedDir}`);
+        
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(error.message || 'Failed to load file tree');
+        }
+        
         const files = await response.json();
-        const fileTree = document.getElementById('file-tree');
-        fileTree.innerHTML = renderFileTree(files);
+        renderFileTree(files);
       } catch (error) {
         console.error('Error loading file tree:', error);
-        alert('Error loading file tree. Check the console for details.');
+        showNotification(`Error loading directory: ${error.message}`, 'error');
+        document.getElementById('file-tree').innerHTML = `
+          <li style="color: #f44336">
+            Error loading directory: ${error.message}
+            <button onclick="loadFileTree('')" style="margin-left: 10px; font-size: 12px;">
+              Return to root
+            </button>
+          </li>
+        `;
       }
     }
 
     // Render the file tree
     function renderFileTree(files) {
-      return files.map(file => `
-        <li class="${file.isDirectory ? 'folder' : 'file'}">
-          ${file.name}
-          ${file.isDirectory ? renderFileTree(file.children || []) : '/templates'}
+      const fileTree = document.getElementById('file-tree');
+      if (!files || files.length === 0) {
+        fileTree.innerHTML = '<li style="color: #aaa;">Empty directory</li>';
+        return;
+      }
+      
+      fileTree.innerHTML = files.map(file => `
+        <li class="${file.isDirectory ? 'folder' : 'file'}" 
+            data-path="${file.path || file.name}">
+          <span class="item-name">${file.name}</span>
+          ${file.isDirectory ? '<span class="file-actions">Open</span>' : ''}
         </li>
       `).join('');
+      
+      // Add click handlers
+      document.querySelectorAll('.folder').forEach(folder => {
+        folder.addEventListener('click', (e) => {
+          if (e.target.classList.contains('file-actions')) return;
+          const folderName = folder.querySelector('.item-name').textContent;
+          const newPath = currentDirectory ? `${currentDirectory}/${folderName}` : folderName;
+          loadFileTree(newPath);
+        });
+      });
     }
 
-    // Open Create Project Modal
+    // Refresh file tree
+    function refreshFileTree() {
+      loadFileTree(currentDirectory);
+    }
+
+    // Modal functions
     function openCreateProjectModal() {
+      document.getElementById('projectName').value = '';
       document.getElementById('createProjectModal').style.display = 'block';
     }
 
-    // Open Create App Modal
     function openCreateAppModal() {
+      document.getElementById('appName').value = '';
       document.getElementById('createAppModal').style.display = 'block';
     }
 
-    // Close Modal
     function closeModal(modalId) {
       document.getElementById(modalId).style.display = 'none';
     }
 
-    // Create a project
-    async function createProject() {
-      try {
-        const projectName = document.getElementById('projectName').value;
-        if (projectName) {
-          const response = await fetch('/api/create-project', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ projectName }),
-          });
-          if (!response.ok) throw new Error('Failed to create project');
-          const result = await response.json();
-          alert(result.message);
-          closeModal('createProjectModal');
-          loadFileTree(projectName); // Refresh file tree for the new project
-        }
-      } catch (error) {
-        console.error('Error creating project:', error);
-        alert('Error creating project. Check the console for details.');
-      }
-    }
+   // Create a project
+async function createProject() {
+  const projectName = document.getElementById('projectName').value.trim();
+  if (!projectName) {
+    showNotification('Please enter a project name', 'error');
+    return;
+  }
+  
+  if (!/^[a-z0-9-]+$/i.test(projectName)) {
+    showNotification('Invalid project name (only letters, numbers, and hyphens allowed)', 'error');
+    return;
+  }
 
-    // Create an app with template selection
-    async function createApp() {
-      try {
-        const appName = document.getElementById('appName').value;
-        const template = document.getElementById('appTemplate').value;
-        if (appName) {
-          const response = await fetch('/api/create-app', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ appName, template }),
-          });
-          if (!response.ok) throw new Error('Failed to create app');
-          const result = await response.json();
-          alert(result.message);
-          closeModal('createAppModal');
-          loadFileTree(appName); // Refresh file tree for the new app
-        }
-      } catch (error) {
-        console.error('Error creating app:', error);
-        alert('Error creating app. Check the console for details.');
-      }
-    }
-    async function createApp() {
+  // Show loading state
+  const createBtn = document.getElementById('createProjectBtn');
+  createBtn.disabled = true;
+  createBtn.innerHTML = '<span class="spinner"></span> Creating...';
+
   try {
-    const appName = document.getElementById('appName').value;
-    if (!appName) {
-      alert('Please enter an app name.');
-      return;
-    }
-
-    const template = document.getElementById('appTemplate').value;
-    if (!['Docs', 'Vue', 'React'].includes(template)) {
-      alert('Invalid template. Please choose Docs, Vue, or React.');
-      return;
-    }
-
-    const response = await fetch('/api/create-app', {
+    const response = await fetch('/api/Projects', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ appName, template }),
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}` // If using authentication
+      },
+      body: JSON.stringify({ 
+        name: projectName,
+        template: 'Projects/templates/default' // Specify template if needed
+      }),
     });
-
+    
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to create app');
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || 'Failed to create project');
     }
-
+    
     const result = await response.json();
-    alert(result.message);
-    closeModal('createAppModal');
-    loadFileTree(appName); // Refresh file tree for the new app
+    
+    // Handle the response based on your API's return structure
+    if (result.downloadUrl) {
+      // If the API returns a download URL
+      handleProjectDownload(result.downloadUrl, projectName);
+    } else if (result.projectPath) {
+      // If the project was created on the server
+      showNotification('Project created successfully', 'success');
+      loadFileTree(result.projectPath);
+    } else {
+      showNotification('Project created', 'success');
+    }
+    
+    closeModal('createProjectModal');
   } catch (error) {
-    console.error('Error creating app:', error);
-    alert(`Error creating app: ${error.message}`);
+    console.error('Error creating project:', error);
+    showNotification(`Error: ${error.message}`, 'error');
+  } finally {
+    // Reset button state
+    createBtn.disabled = false;
+    createBtn.textContent = 'Create Project';
   }
 }
-    // Load file tree on page load
-    loadFileTree();
+
+// Helper function to handle project download
+async function handleProjectDownload(downloadUrl, projectName) {
+  try {
+    const response = await fetch(downloadUrl);
+    if (!response.ok) throw new Error('Failed to download project');
+    
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    
+    // Create download link
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${projectName}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    
+    // Clean up
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+    
+    showNotification('Project downloaded successfully', 'success');
+  } catch (error) {
+    console.error('Download failed:', error);
+    showNotification('Failed to download project', 'error');
+  }
+}
+
+    // Create an app
+    async function createApp() {
+      const appName = document.getElementById('appName').value.trim();
+      if (!appName) {
+        showNotification('Please enter an app name', 'error');
+        return;
+      }
+      
+      if (!/^[a-z0-9-]+$/i.test(appName)) {
+        showNotification('Invalid app name (only letters, numbers, and hyphens allowed)', 'error');
+        return;
+      }
+      
+      const template = document.getElementById('appTemplate').value;
+      if (!['Docs', 'Vue', 'React'].includes(template)) {
+        showNotification('Invalid template selected', 'error');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/create-app', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ appName, template }),
+        });
+        
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(error.message || 'Failed to create app');
+        }
+        
+        const result = await response.json();
+        showNotification(result.message || 'App created successfully', 'success');
+        closeModal('createAppModal');
+        loadFileTree(appName);
+      } catch (error) {
+        console.error('Error creating app:', error);
+        showNotification(`Error: ${error.message}`, 'error');
+      }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      initWebSocket();
+      loadFileTree();
+      
+      // Close modals when clicking outside
+      window.addEventListener('click', (event) => {
+        if (event.target.className === 'modal') {
+          event.target.style.display = 'none';
+        }
+      });
+    });
   </script>
 </body>
 </html>

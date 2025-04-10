@@ -1,29 +1,21 @@
-
-// Updated banana.config.js
-import config from './banana.config.json' assert { type: 'json' };
+// banana.config.js
 module.exports = {
-  entry: './src/main.js',
+  entry: './src/main.jsx', // Point to React entry
   outDir: 'dist',
-  plugins: [
-    require('@vitejs/plugin-vue')(),
-    require('@vitejs/plugin-react')()
-  ],
+  framework: 'react', // Default framework
+  plugins: {
+    react: require('@vitejs/plugin-react')(),
+    vue: require('@vitejs/plugin-vue')() // Optional for subprojects
+  },
   esbuild: {
-    minify: true,
-    sourcemap: true,
+    jsx: 'automatic', // React 17+ JSX transform
     loader: {
-      '.js': 'jsx', // Treat .js files as JSX
+      '.js': 'jsx',
       '.jsx': 'jsx',
-      '.vue': 'vue',
-      '.css': 'css',
-    },
+      '.css': 'css'
+    }
   },
   optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      'vue'
-    ]
+    include: ['react', 'react-dom']
   }
 };
-

@@ -14,7 +14,7 @@
       "banana": "../bin/cli.cjs"
     },
     "dependencies": {
-      "@ronyman/bananajs": "^0.1.0",
+      "@ronyman/bananajs": "{{banana-version}}",
       "react": "^18.0.0",
       "react-dom": "^18.0.0",
       "typescript": "^5.0.0"
