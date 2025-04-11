@@ -1,6 +1,6 @@
 {
   "name": "@ronyman/bananajs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -42,6 +42,8 @@
     "chart.js": "^4.4.8",
     "chokidar": "^4.0.3",
     "commander": "^13.1.0",
+    "connect-history-api-fallback": "^2.0.0",
+    "cross-env": "^7.0.3",
     "esbuild-style-plugin": "^1.6.3",
     "express": "^4.21.2",
     "figlet": "^1.8.0",

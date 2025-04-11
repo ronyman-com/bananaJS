@@ -1,8 +1,8 @@
 ## Start Page
-![alt text](/public/bannaJs-index.png)
+![alt text](/public/bannan_dev_index.png)
 
 ## Create Project or App from browser.
-![alt text](/public/bannaJs-create-browser.png)
+![alt text](/public/bannan_dev_dash.png)
 
 
 
@@ -53,200 +53,193 @@ yarn build`
 
 
 
-bananaJS/
-├── Banana/                  # Core framework implementation
-│   ├── public/              # Static assets served directly to clients
-│   │   ├── index.html       # Main HTML entry point with root DOM element
-│   │   ├── styles/          # Global CSS styles (not component-scoped)
-│   │   │   └── main.css     # Framework-wide styles and CSS variables
-│   │   ├── main.js          # Bundled client-side entry point
-│   │   ├── logo.svg         # Brand logo in vector format
-│   │   ├── github-icon.svg  # GitHub logo for integrations
-│   │   └── dashboard.html   # Admin dashboard template
-│   ├── src/                 # Framework source code (pre-compilation)
-│   │   ├── components/      # Reusable UI components (JSX)
-│   │   │   ├── Navbar.jsx   # Top navigation bar component
-│   │   │   ├── Sidebar.jsx  # Collapsible side navigation
-│   │   │   └── Footer.jsx   # Page footer with copyright/links
-│   │   ├── pages/           # Route-based page components
-│   │   │   ├── Home.jsx     # Marketing landing page
-│   │   │   ├── GettingStarted.jsx  # Installation docs
-│   │   │   ├── Features.jsx # Framework feature highlights
-│   │   │   ├── Plugins.jsx  # Plugin system documentation
-│   │   │   ├── ApiReference.jsx # Auto-generated API docs
-│   │   │   ├── Examples.jsx # Interactive code examples
-│   │   │   ├── Blog.jsx     # Blog post listings
-│   │   │   ├── Changelog.jsx # Version release notes
-│   │   │   └── News.jsx     # Project announcements
-│   │   ├── router/          # Client-side routing logic
-│   │   │   └── index.js     # Route definitions and history config
-│   │   ├── styles/          # Component-scoped styles
-│   │   │   └── main.css     # CSS for framework components
-│   │   ├── App.jsx          # Root application layout component
-│   │   └── main.jsx         # React DOM render entry point
-│   ├── dist/                # Production build output (auto-generated)
-│   ├── node_modules/        # NPM dependencies (auto-generated)
-│   ├── .env.example         # Environment variable template
-│   ├── .env.production      # Production-specific configs
-│   └── .env.development     # Development environment vars
-
-├── bin/                     # Command-line interface tools
-│   ├── banana.config.json   # CLI configuration defaults
-│   ├── build.cjs            # Production build script (CommonJS)
-│   ├── cli.cjs              # Main CLI entry point (commands)
-│   └── server.cjs           # Development server implementation
-
-├── lib/                     # Shared JavaScript libraries
-│   ├── cli-version.cjs      # Version checking/management
-│   ├── create-app.cjs       # Scaffolds new applications
-│   ├── create-project.cjs   # Creates full project structure
-│   └── detect-framework.cjs # Detects framework in existing projects
-
-├── public/                  # Global static assets
-│   ├── scripts/             # Shared JavaScript utilities
-│   ├── styles/              # Shared CSS resources
-│   │   ├── banana.css       # Core framework styles
-│   │   └── main.css         # Base normalization/reset styles
-│   ├── dashboard.html       # Admin dashboard entry point
-│   ├── favicon.ico          # Browser tab icon
-│   ├── github-icon          # GitHub integration assets
-│   ├── index.html           # Fallback HTML for SPA
-│   ├── logo.svg             # Brand logo variants
-│   ├── main.js              # Legacy script entry
-│   ├── main.ts              # TypeScript entry point
-│   └── site.webmanifest     # PWA configuration
-
-├── src/                     # Application source code
-│   ├── pages/               # View components
-│   │   ├── Dashboard.jsx    # Admin interface
-│   │   ├── Home.jsx         # Main landing page
-│   │   └── NotFound.jsx     # 404 error page
-│   ├── router/              # Application routing
-│   │   └── index.js         # Route configuration
-│   ├── services/            # Business logic/services
-│   │   ├── api.js           # REST API client
-│   │   └── websocket.js     # Real-time communication
-│   ├── styles/              # Application styles
-│   │   └── main.css         # Global style rules
-│   ├── utils/               # Helper functions
-│   │   └── security.js      # Authentication utilities
-│   ├── App.jsx              # Root component
-│   ├── App.module.css       # CSS Modules styles
-│   ├── index.js             # Legacy entry point
-│   ├── main.jsx             # Modern React entry
-│   ├── main.ts              # TypeScript entry
-│   ├── server.js            # Express server config
-│   └── styles.scss          # Sass stylesheet
-
-├── Projects/                # Example implementations
-│   └── templates/           # Blueprint projects
-│       └── default/         # Default starter template
-│           └├── public/              # Static assets served directly to clients
-            │   │   ├── index.html       # Main HTML entry point with root DOM element
-            │   │   ├── styles/          # Global CSS styles (not component-scoped)
-            │   │   │   └── main.css     # Framework-wide styles and CSS variables
-            │   │   ├── main.js          # Bundled client-side entry point
-            │   │   ├── logo.svg         # Brand logo in vector format
-            │   │   ├── github-icon.svg  # GitHub logo for integrations
-            │   │   └── dashboard.html   # Admin dashboard template
-            │   ├── src/                 # Framework source code (pre-compilation)
-            │   │   ├── components/      # Reusable UI components (JSX)
-            │   │   │   ├── Navbar.jsx   # Top navigation bar component
-            │   │   │   ├── Sidebar.jsx  # Collapsible side navigation
-            │   │   │   └── Footer.jsx   # Page footer with copyright/links
-            │   │   ├── pages/           # Route-based page components
-            │   │   │   ├── Home.jsx     # Marketing landing page
-            │   │   │   ├── GettingStarted.jsx  # Installation docs
-            │   │   │   ├── Features.jsx # Framework feature highlights
-            │   │   │   ├── Plugins.jsx  # Plugin system documentation
-            │   │   │   ├── ApiReference.jsx # Auto-generated API docs
-            │   │   │   ├── Examples.jsx # Interactive code examples
-            │   │   │   ├── Blog.jsx     # Blog post listings
-            │   │   │   ├── Changelog.jsx # Version release notes
-            │   │   │   └── News.jsx     # Project announcements
-            │   │   ├── router/          # Client-side routing logic
-            │   │   │   └── index.js     # Route definitions and history config
-            │   │   ├── styles/          # Component-scoped styles
-            │   │   │   └── main.css     # CSS for framework components
-            │   │   ├── App.jsx          # Root application layout component
-            │   │   └── main.jsx         # React DOM render entry point
-            │   ├── dist/                # Production build output (auto-generated)
-            │   ├── node_modules/        # NPM dependencies (auto-generated)
-            │   ├── .env.example         # Environment variable template
-            │   ├── .env.production      # Production-specific configs
-            │   └── .env.development     # Development environment vars
-
-├── templates/               # Framework-agnostic starters
-│   ├── docs/                # Documentation site template
-│   │   ├── dist/            # Built assets directory
-│   │   │   ├── bundle.js    # Webpack/Rollup output
-│   │   │   └── bundle.js.map # Debug source maps
-│   │   ├── public/          # Static documentation assets
-│   │   │   └── styles/      # Doc-specific styles
-│   │   │       └── main.css 
-│   │   ├── src/             # Documentation source
-│   │   │   ├── pages/       # Documentation views
-│   │   │   │   ├── ApiReference.vue  # API docs
-│   │   │   │   ├── Blog.vue # Blog system
-│   │   │   │   ├── Examples.vue # Code samples
-│   │   │   │   ├── Features.vue # Feature highlights
-│   │   │   │   ├── Home.vue    # Docs homepage
-│   │   │   │   └── Plugins.vue # Plugin docs
-│   │   │   ├── router/      # Vue router config
-│   │   │   │   └── index.js 
-│   │   │   ├── styles/      # Component styles
-│   │   │   │   └── main.css 
-│   │   │   └── main.js      # Vue initialization
-│   │   ├── App.vue          # Root Vue component
-│   │   └── [config files]   # Build tool configs
-│   ├── react/               # React starter kit
-│   │   ├── src/             # React source
-│   │   │   ├── components/  # Presentational components
-│   │   │   ├── styles/      # React styling
-│   │   │   │   └── App.scss # Sass stylesheet
-│   │   │   ├── App.jsx      # Root component
-│   │   │   └── main.js      # ReactDOM render
-│   │   └── [config files]   # React-specific configs
-│   └── vue/                 # Vue starter kit
-│       ├── public/          # Vue static assets
-│       │   └── index.html   # Mount point
-│       ├── src/             # Vue source
-│       │   ├── components/  # Vue components
-│       │   │   └── HelloWorld.vue # Example
-│       │   ├── App.vue      # Root Vue instance
-│       │   └── main.js      # Vue initialization
-│       └── [config files]   # Vue build configs
-
-├── plugins/                 # Framework extensions
-│   ├── css-modules.js       # CSS Modules support
-│   ├── css.js               # CSS processing
-│   ├── scss.js              # Sass compilation
-│   ├── typescript.js        # TypeScript transpilation
-│   ├── react.js             # React specific transforms
-│   └── vue.js               # Vue single-file components
-
-├── dist/                    # Final build artifacts
-│   ├── bundle.js            # Minified production bundle
-│   ├── main.css             # Optimized CSS output
-│   └── assets/              # Processed static assets
-│       ├── logo.svg         # Optimized vector logo
-│       ├── github-icon.svg  # Minified SVG
-│       └── images/          # Compressed images
-
-├── [Root Config Files]      # Project configuration
-│   ├── banana.config.js     # Framework-specific settings
-│   ├── package.json        # NPM package manifest
-│   ├── tailwind.config.js  # Tailwind CSS config
-│   ├── postcss.config.js   # PostCSS plugins
-│   ├── vite.config.js      # Vite build config
-│   └── README.md           # Project documentation
-
-├── [Supporting Files]       # Auxiliary project files
-│   ├── .env                # Local environment variables
-│   ├── .gitignore          # Version control exclusions
-│   ├── yarn.lock           # Yarn dependency tree
-│   ├── registry.js         # Plugin registry API
-│   └── marketplace.js      # Plugin discovery system
+bananaJS/ \
+├── Banana/                        # Core framework implementation \
+│   ├── public/                   # Static assets served directly to clients \
+│   │   ├── serve.json                # Server configuration for static hosting \
+│   │   ├── assets/                 # Static asset files \
+│   │   │   ├── logo.svg                # Brand logo in SVG format \
+│   │   │   └── favicon.icon            # Browser tab icon \
+│   │   ├── index.html                # Main HTML entry point with root DOM element \
+│   │   ├── styles/                  # Global CSS styles (not component-scoped) \
+│   │   │   └── main.css                # Framework-wide styles and CSS variables \
+│   │   ├── github-icon.svg            # GitHub logo for integrations \
+│   ├── src/                       # Framework source code (pre-compilation) \
+│   │   ├── components/             # Reusable UI components (JSX) \
+│   │   │   ├── Navbar.jsx              # Top navigation bar component \
+│   │   │   ├── Sidebar.jsx             # Collapsible side navigation \
+│   │   │   └── Footer.jsx              # Page footer with copyright/links \
+│   │   ├── pages/                  # Route-based page components \
+│   │   │   ├── Home.jsx                # Marketing landing page \
+│   │   │   ├── GettingStarted.jsx      # Installation docs \
+│   │   │   ├── Features.jsx            # Framework feature highlights \
+│   │   │   ├── Plugins.jsx             # Plugin system documentation \
+│   │   │   ├── ApiReference.jsx        # Auto-generated API docs \
+│   │   │   ├── Examples.jsx            # Interactive code examples \
+│   │   │   ├── Blog.jsx                # Blog post listings \
+│   │   │   ├── Changelog.jsx           # Version release notes \
+│   │   │   └── News.jsx                # Project announcements \
+│   │   ├── router/                 # Client-side routing logic \
+│   │   │   └── index.js                # Route definitions and history config \
+│   │   ├── styles/                 # Component-scoped styles \
+│   │   │   └── main.css                # CSS for framework components \
+│   │   ├── App.jsx                    # Root application layout component \
+│   │   └── main.jsx                   # React DOM render entry point \
+│   ├── dist/                       # Production build output (auto-generated) \
+│   ├── node_modules/               # NPM dependencies (auto-generated) \
+│   ├── .env.example                # Environment variable template \
+│   ├── .env.production             # Production-specific configs \
+│   └── .env.development            # Development environment vars \
+├── bin/                           # Command-line interface tools \
+│   ├── banana.config.json            # CLI configuration defaults \
+│   ├── build.cjs                     # Production build script (CommonJS) \
+│   ├── cli.cjs                       # Main CLI entry point (commands) \
+│   ├── server.cjs                    # Development server implementation \
+│   └── websocket.cjs                 # WebSocket server implementation \
+├── lib/                           # Shared JavaScript libraries \
+│   ├── cli-version.cjs               # Version checking/management \
+│   ├── create-app.cjs                # Scaffolds new applications \
+│   ├── create-project.cjs            # Creates full project structure \
+│   └── detect-framework.cjs          # Detects framework in existing projects \
+├── public/                        # Global static assets \
+│   ├── scripts/                    # Shared JavaScript utilities \
+│   ├── styles/                     # Shared CSS resources \
+│   │   ├── banana.css                # Core framework styles \
+│   │   └── main.css                  # Base normalization/reset styles \
+│   ├── dashboard.html                # Admin dashboard entry point \
+│   ├── favicon.ico                   # Browser tab icon \
+│   ├── github-icon                   # GitHub integration assets \
+│   ├── index.html                    # Fallback HTML for SPA \
+│   ├── logo.svg                      # Brand logo variants \
+│   ├── main.ts                       # TypeScript entry point \
+│   └── site.webmanifest              # PWA configuration \
+├── src/                           # Application source code \
+│   ├── pages/                      # View components \
+│   │   ├── Dashboard.jsx              # Admin interface \
+│   │   ├── Home.jsx                   # Main landing page \
+│   │   └── NotFound.jsx               # 404 error page \
+│   │   ├── hooks/                   # Custom React hooks \
+│   │   │   └── useWebSocket.js         # WebSocket connection hook \
+│   ├── router/                     # Application routing \
+│   │   └── index.js                   # Route configuration \
+│   ├── services/                   # Business logic/services \
+│   │   ├── api.js                      # REST API client \
+│   │   └── websocket.js                # Real-time communication \
+│   ├── styles/                     # Application styles \
+│   │   └── main.css                   # Global style rules \
+│   ├── utils/                      # Helper functions \
+│   │   └── security.js                 # Authentication utilities \
+│   ├── App.jsx                        # Root component \
+│   ├── App.module.css                  # CSS Modules styles \
+│   ├── index.js                       # Legacy entry point \
+│   ├── main.jsx                       # Modern React entry \
+│   ├── main.ts                        # TypeScript entry \
+│   ├── server.js                      # Express server config \
+│   └── styles.scss                    # Sass stylesheet \
+├── Projects/                      # Example implementations \
+│   └── templates/                 # Blueprint projects \
+│       └── default/               # Default starter template \
+│           ├── public/               # Static assets served directly to clients \
+│           │   ├── index.html        # Main HTML entry point \
+│           │   ├── styles/ \
+│           │   │   └── main.css \
+│           │   ├── main.js \
+│           │   ├── logo.svg \
+│           │   ├── github-icon.svg \
+│           │   └── dashboard.html \
+│           ├── src/                  # Framework source code \
+│           │   ├── components/ \
+│           │   │   ├── Navbar.jsx \
+│           │   │   ├── Sidebar.jsx \
+│           │   │   └── Footer.jsx \
+│           │   ├── pages/ \
+│           │   │   ├── Home.jsx \
+│           │   │   ├── GettingStarted.jsx \
+│           │   │   ├── Features.jsx \
+│           │   │   ├── Plugins.jsx \
+│           │   │   ├── ApiReference.jsx \
+│           │   │   ├── Examples.jsx \
+│           │   │   ├── Blog.jsx \
+│           │   │   ├── Changelog.jsx \
+│           │   │   └── News.jsx \
+│           │   ├── router/ \
+│           │   │   └── index.js \
+│           │   ├── styles/ \
+│           │   │   └── main.css \
+│           │   ├── App.jsx \
+│           │   └── main.jsx \
+│           ├── dist/ \
+│           ├── node_modules/ \
+│           ├── .env.example \
+│           ├── .env.production \
+│           └── .env.development \
+├── templates/                     # Framework-agnostic starters \
+│   ├── docs/                      # Documentation site template \
+│   │   ├── dist/                  # Built assets directory \
+│   │   │   ├── bundle.js \
+│   │   │   └── bundle.js.map \
+│   │   ├── public/                # Static documentation assets \
+│   │   │   └── styles/ \
+│   │   │       └── main.css \
+│   │   ├── src/                   # Documentation source \
+│   │   │   ├── pages/             # Documentation views \
+│   │   │   │   ├── ApiReference.vue \
+│   │   │   │   ├── Blog.vue \
+│   │   │   │   ├── Examples.vue \
+│   │   │   │   ├── Features.vue \
+│   │   │   │   ├── Home.vue \
+│   │   │   │   └── Plugins.vue \
+│   │   │   ├── router/            # Vue router config \
+│   │   │   │   └── index.js \
+│   │   │   ├── styles/            # Component styles \
+│   │   │   │   └── main.css \
+│   │   │   └── main.js            # Vue initialization \
+│   │   ├── App.vue                # Root Vue component \
+│   │   └── [config files]         # Build tool configs \
+│   ├── react/                     # React starter kit \
+│   │   ├── src/                   # React source \
+│   │   │   ├── components/        # Presentational components \
+│   │   │   ├── styles/            # React styling \
+│   │   │   │   └── App.scss       # Sass stylesheet \
+│   │   │   ├── App.jsx            # Root component \
+│   │   │   └── main.js            # ReactDOM render \
+│   │   └── [config files]         # React-specific configs \
+│   └── vue/                       # Vue starter kit \
+│       ├── public/                # Vue static assets \
+│       │   └── index.html         # Mount point \
+│       ├── src/                   # Vue source \
+│       │   ├── components/        # Vue components \
+│       │   │   └── HelloWorld.vue # Example component \
+│       │   ├── App.vue            # Root Vue instance \
+│       │   └── main.js            # Vue initialization \
+│       └── [config files]         # Vue build configs \
+├── plugins/                       # Framework extensions \
+│   ├── css-modules.js             # CSS Modules support \
+│   ├── css.js                     # CSS processing \
+│   ├── scss.js                    # Sass compilation \
+│   ├── typescript.js              # TypeScript transpilation \
+│   ├── react.js                   # React specific transforms \
+│   └── vue.js                     # Vue single-file components \
+├── dist/                          # Final build artifacts \
+│   ├── bundle.js                  # Minified production bundle \
+│   ├── main.css                   # Optimized CSS output \
+│   └── assets/                    # Processed static assets \
+│       ├── logo.svg               # Optimized vector logo \
+│       ├── github-icon.svg        # Minified SVG \
+│       └── images/                # Compressed images \
+├── [Root Config Files]            # Project configuration \
+│   ├── banana.config.js           # Framework-specific settings \
+│   ├── package.json               # NPM package manifest \
+│   ├── tailwind.config.js         # Tailwind CSS config \
+│   ├── postcss.config.js          # PostCSS plugins \
+│   ├── vite.config.js             # Vite build config \
+│   └── README.md                  # Project documentation \
+├── [Supporting Files]             # Auxiliary project files \
+│   ├── .env                       # Local environment variables \
+│   ├── .gitignore                 # Version control exclusions \
+│   ├── yarn.lock                  # Yarn dependency tree \
+│   ├── registry.js                # Plugin registry API \
+│   └── marketplace.js             # Plugin discovery system
 
 
 

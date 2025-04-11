@@ -1,0 +1,97 @@
+/* Banana/src/styles/components/ApiSection.css */
+.api-section {
+    margin-bottom: 3rem;
+  }
+  
+  .api-section h2 {
+    color: #e67a00;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f5e6ca;
+  }
+  
+  .method-list {
+    display: grid;
+    gap: 1.5rem;
+  }
+  
+  .method-card {
+    background: #f9f4e8;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border-left: 4px solid #f0e6d2;
+  }
+  
+  .method-card:hover {
+    background: #f5e6ca;
+  }
+  
+  .method-name {
+    color: #d46b00;
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .method-description {
+    color: #5a3e1f;
+    margin-bottom: 1.25rem;
+    line-height: 1.6;
+  }
+  
+  .method-params h4 {
+    color: #7a5c3c;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .param-item {
+    display: grid;
+    grid-template-columns: 120px 80px 1fr;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    align-items: baseline;
+  }
+  
+  .param-name {
+    font-family: 'Courier New', monospace;
+    color: #5a3e1f;
+    font-weight: bold;
+  }
+  
+  .param-type {
+    color: #9c7c5c;
+    font-style: italic;
+    font-size: 0.9rem;
+  }
+  
+  .param-description {
+    color: #5a3e1f;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  
+  .method-returns {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed #f0e6d2;
+    color: #5a3e1f;
+    font-size: 0.95rem;
+  }
+  
+  .method-returns strong {
+    color: #7a5c3c;
+  }
+  
+  @media (max-width: 768px) {
+    .param-item {
+      grid-template-columns: 1fr;
+      gap: 0.25rem;
+    }
+    
+    .method-card {
+      padding: 1rem;
+    }
+  }

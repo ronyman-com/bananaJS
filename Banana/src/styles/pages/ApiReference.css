@@ -1,0 +1,163 @@
+/* Banana/src/styles/pages/ApiReference.css */
+.api-reference {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .api-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+  
+  .api-header h1 {
+    color: #e67a00;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .api-header .subtitle {
+    color: #7a5c3c;
+    font-size: 1.2rem;
+  }
+  
+  .search-box {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+    gap: 0.5rem;
+  }
+  
+  .search-box input {
+    padding: 0.75rem 1rem;
+    border: 1px solid #f0e6d2;
+    border-radius: 8px;
+    min-width: 300px;
+    font-size: 1rem;
+  }
+  
+  .search-box button {
+    padding: 0 1.5rem;
+    background-color: #e67a00;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .search-box button:hover {
+    background-color: #d46b00;
+  }
+  
+  .api-content {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+  
+  .api-section {
+    background: white;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .api-section h2 {
+    color: #5a3e1f;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #f0e6d2;
+  }
+  
+  .method-list {
+    display: grid;
+    gap: 1.5rem;
+  }
+  
+  .method-card {
+    background: #f9f4e8;
+    border-radius: 8px;
+    padding: 1.5rem;
+  }
+  
+  .method-name {
+    color: #e67a00;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+  
+  .method-description {
+    color: #5a3e1f;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+  
+  .method-params {
+    margin-bottom: 1rem;
+  }
+  
+  .param-item {
+    display: flex;
+    margin-bottom: 0.5rem;
+  }
+  
+  .param-name {
+    font-family: 'Courier New', monospace;
+    color: #7a5c3c;
+    min-width: 120px;
+  }
+  
+  .param-type {
+    color: #9c7c5c;
+    font-style: italic;
+    margin-right: 1rem;
+  }
+  
+  .param-description {
+    color: #5a3e1f;
+  }
+  
+  .method-returns {
+    font-style: italic;
+    color: #5a3e1f;
+  }
+  
+  .method-returns strong {
+    color: #7a5c3c;
+  }
+  
+  @media (max-width: 768px) {
+    .api-reference {
+      padding: 1rem;
+    }
+    
+    .api-header h1 {
+      font-size: 2rem;
+    }
+    
+    .search-box {
+      flex-direction: column;
+    }
+    
+    .search-box input {
+      min-width: auto;
+      width: 100%;
+    }
+    
+    .method-list {
+      grid-template-columns: 1fr;
+    }
+    
+    .param-item {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    
+    .param-name {
+      min-width: auto;
+    }
+  }

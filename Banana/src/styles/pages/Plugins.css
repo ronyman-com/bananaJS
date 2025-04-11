@@ -1,0 +1,83 @@
+.plugins-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .plugins-page h1 {
+    color: #e67a00;
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 2.5rem;
+  }
+  
+  .plugins-page .subtitle {
+    text-align: center;
+    color: #7a5c3c;
+    margin-bottom: 3rem;
+    font-size: 1.2rem;
+  }
+  
+  .plugins-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .plugin-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-left: 4px solid #f0e6d2;
+    transition: all 0.2s;
+  }
+  
+  .plugin-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  
+  .plugin-card.official {
+    border-left-color: #e67a00;
+  }
+  
+  .plugin-card h3 {
+    color: #5a3e1f;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .plugin-card .official-badge {
+    background: #e67a00;
+    color: white;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+  }
+  
+  .plugin-card p {
+    color: #7a5c3c;
+    margin-bottom: 1rem;
+  }
+  
+  .plugin-card .meta {
+    display: flex;
+    justify-content: space-between;
+    color: #9c7c5c;
+    font-size: 0.9rem;
+  }
+  
+  .plugin-card .stars {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  
+  @media (max-width: 768px) {
+    .plugins-page h1 {
+      font-size: 2rem;
+    }
+  }

@@ -57,7 +57,11 @@
 
   <!-- Preload Critical Resources -->
   <link rel="preload" href="/styles/banana.css" as="style">
-  <link rel="preload" href="/main.js" as="script">
+  <!-- Preload main.js with proper crossorigin -->
+  <link rel="preload" href="main.js" as="script" crossorigin="anonymous">
+
+  <!-- If using credentials -->
+  <!---<link rel="preload" href="/main.js" as="script" crossorigin="use-credentials">  -->
 
   <!-- CSS -->
   <link rel="stylesheet" href="/styles/banana.css">
@@ -180,17 +184,19 @@
           A modern, fast, and lightweight JavaScript framework for building web applications with a focus on developer experience.
         </p>
         <div class="flex flex-wrap justify-center gap-4">
-          <a href="/docs" class="btn btn-primary">
+          <a href="/docs.html" class="btn btn-primary">
             Get Started
           </a>
-          <a href="/features" class="btn btn-secondary">
+          <a href="/features.html" class="btn btn-secondary">
             Explore Features
           </a>
-          <a href="/dashboard" class="btn btn-secondary">
+          <a href="/dashboard.html" class="btn btn-secondary">
             Development Dashboard
           </a>
         </div>
       </div>
+
+
     </main>
 
     <!-- Features Section -->
@@ -223,16 +229,16 @@
           class="text-banana-yellow hover:underline">Rony MAN</a>
         </p>
         <div class="flex justify-center space-x-4 mt-4 text-gray-500">
-          <a href="/privacy" class="hover:text-banana-yellow hover:underline">Privacy Policy</a>
-          <a href="/terms" class="hover:text-banana-yellow hover:underline">Terms of Service</a>
-          <a href="/contact" class="hover:text-banana-yellow hover:underline">Contact</a>
+          <a href="/privacy.html" class="hover:text-banana-yellow hover:underline">Privacy Policy</a>
+          <a href="/terms.hmtl" class="hover:text-banana-yellow hover:underline">Terms of Service</a>
+          <a href="/contact.html" class="hover:text-banana-yellow hover:underline">Contact</a>
         </div>
       </div>
     </footer>
   </div>
 
   <!-- Scripts -->
-  <script type="module" src="/main.js"></script>
+  <script type="module" src="main.js"></script>
   <script>
     // Enhanced Theme Manager
     class ThemeManager {
@@ -330,5 +336,49 @@
       };
     });
   </script>
+
+<script>
+  // Display connection status
+  const statusElement = document.getElementById('status-message');
+  let retries = 0;
+  const maxRetries = 3;
+
+  function checkBackendStatus() {
+    fetch('/api/status')
+      .then(response => response.json())
+      .then(data => {
+        statusElement.textContent = `Connected to backend (${data.nodeEnv} mode)`;
+      })
+      .catch(err => {
+        retries++;
+        statusElement.textContent = `Connecting... (Attempt ${retries} of ${maxRetries})`;
+        if (retries < maxRetries) {
+          setTimeout(checkBackendStatus, 2000);
+        } else {
+          statusElement.innerHTML = `
+            <span style="color: red">Connection failed</span>
+            <button onclick="window.location.reload()" 
+                    style="margin-top: 0.5rem; padding: 0.3rem 0.6rem; font-size: 0.8rem">
+              Retry
+            </button>
+          `;
+        }
+      });
+  }
+
+  // Start checking status when page loads
+  checkBackendStatus();
+</script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,73 @@
+.home-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .home-page .hero {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, #f9f4e8, #f5e6ca);
+    border-radius: 12px;
+    margin-bottom: 3rem;
+  }
+  
+  .home-page .hero h1 {
+    font-size: 3rem;
+    color: #e67a00;
+    margin-bottom: 1rem;
+  }
+  
+  .home-page .hero p {
+    font-size: 1.5rem;
+    color: #5a3e1f;
+    margin-bottom: 2rem;
+  }
+  
+  .home-page .cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+  }
+  
+  .home-page .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  
+  .home-page .btn.primary {
+    background-color: #e67a00;
+    color: white;
+  }
+  
+  .home-page .btn.secondary {
+    background-color: transparent;
+    color: #e67a00;
+    border: 2px solid #e67a00;
+  }
+  
+  .home-page .highlights {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+  
+  .home-page .highlight-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+  }
+  
+  .home-page .highlight-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .home-page .highlight-card h3 {
+    color: #e67a00;
+    margin-bottom: 0.5rem;
+  }

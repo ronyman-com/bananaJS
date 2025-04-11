@@ -1,26 +1,29 @@
+// vite.config.js
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import tailwindcss from 'tailwindcss';
+import { resolve } from 'path';
 
-export default defineConfig(({ mode }) => ({
-  plugins: [
-    react({
-      jsxRuntime: 'classic',
-      fastRefresh: process.env.VITE_HMR === 'true'
-    })
-  ],
-  css: {
-    postcss: {
-      plugins: [tailwindcss()]
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+      '~': resolve(__dirname, './src')
     }
   },
-  server: {
-    port: parseInt(process.env.VITE_PORT),
-    open: process.env.BROWSER !== 'none'
-  },
   build: {
-    outDir: process.env.VITE_OUT_DIR,
-    sourcemap: process.env.VITE_SOURCE_MAP === 'true',
-    minify: process.env.VITE_MINIFY === 'true'
+    outDir: 'dist',
+    sourcemap: true,
+    minify: true,
+    target: 'es2020',
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html')
+      }
+    }
+  },
+  esbuild: {
+    jsx: 'automatic',
+    jsxImportSource: 'react'
   }
-}));
+});

@@ -1,106 +1,108 @@
-import express from 'express';
+import { WebSocketServer } from 'ws';
+import http from 'http';
+import chokidar from 'chokidar';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import fs from 'fs-extra';
-import open from 'open';
-import { WebSocketServer } from 'ws';
-import chokidar from 'chokidar';
-import http from 'http';
 
-// Get directory name equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const app = express();
-const PORT = 5000;
+class BananaWebSocket {
+  constructor(port = 5000) {
+    this.port = port;
+    this.server = http.createServer();
+    this.wss = new WebSocketServer({ server: this.server });
+    this.clients = new Set();
+    this.watcher = null;
+    this.buildStartTime = null;
+  }
 
-// Create HTTP server
-const server = http.createServer(app);
+  init() {
+    this.setupWebSocket();
+    this.setupFileWatcher();
+    this.startServer();
+  }
 
-// Create WebSocket server attached to the HTTP server
-const wss = new WebSocketServer({ server });
+  setupWebSocket() {
+    this.wss.on('connection', (ws) => {
+      this.clients.add(ws);
+      console.log('New client connected');
 
-// WebSocket HMR initialization function
-export function initHMRWebSocket(vueInstance) {
-  const ws = new WebSocket(`ws://localhost:${PORT}`);
-  
-  ws.addEventListener('open', () => {
-    console.log('Connected to HMR server');
-  });
+      ws.on('message', (message) => {
+        this.handleMessage(ws, message);
+      });
 
-  ws.addEventListener('message', (event) => {
+      ws.on('close', () => {
+        this.clients.delete(ws);
+        console.log('Client disconnected');
+      });
+
+      ws.on('error', (error) => {
+        console.error('WebSocket error:', error);
+        this.clients.delete(ws);
+      });
+    });
+  }
+
+  setupFileWatcher() {
+    this.watcher = chokidar.watch(['./src', './public'], {
+      ignored: /node_modules/,
+      persistent: true,
+      ignoreInitial: true
+    });
+
+    this.watcher.on('change', (filePath) => {
+      this.handleFileChange(filePath);
+    });
+  }
+
+  handleMessage(ws, message) {
     try {
-      const message = JSON.parse(event.data);
-      if (message.type === 'metrics') {
-        vueInstance.buildTime = message.data.buildTime;
-        vueInstance.hmrUpdateTime = message.data.hmrUpdateTime;
+      const parsed = JSON.parse(message);
+      console.log('Received:', parsed);
+      
+      // Handle different message types
+      switch(parsed.type) {
+        case 'build-start':
+          this.buildStartTime = Date.now();
+          break;
+        case 'request-update':
+          ws.send(JSON.stringify({ type: 'status', data: 'ready' }));
+          break;
+        default:
+          this.broadcast(message);
       }
     } catch (error) {
-      console.error('Error parsing WebSocket message:', error);
+      console.error('Error parsing message:', error);
     }
-  });
+  }
 
-  ws.addEventListener('error', (error) => {
-    console.error('WebSocket connection error:', error);
-  });
+  handleFileChange(filePath) {
+    const hmrUpdateTime = Date.now() - this.buildStartTime;
+    console.log(`File changed: ${filePath} (${hmrUpdateTime}ms)`);
+    
+    this.broadcast({
+      type: 'update',
+      file: path.relative(process.cwd(), filePath),
+      time: hmrUpdateTime
+    });
+  }
 
-  ws.addEventListener('close', (event) => {
-    console.log(event.wasClean ? 'Connection closed cleanly' : 'Connection abruptly closed');
-  });
+  broadcast(message) {
+    const payload = typeof message === 'string' ? message : JSON.stringify(message);
+    this.clients.forEach(client => {
+      if (client.readyState === WebSocketServer.OPEN) {
+        client.send(payload);
+      }
+    });
+  }
 
-  return ws;
+  startServer() {
+    this.server.listen(this.port, () => {
+      console.log(`WebSocket server running on ws://localhost:${this.port}`);
+    });
+  }
 }
 
-// Express middleware and routes
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json());
-
-// WebSocket connection handler
-wss.on('connection', (ws) => {
-  console.log('New client connected');
-
-  ws.on('message', (message) => {
-    console.log('Received:', message.toString());
-  });
-
-  ws.on('close', () => {
-    console.log('Client disconnected');
-  });
-
-  ws.on('error', (error) => {
-    console.error('WebSocket error:', error);
-  });
-});
-
-// File watching for HMR
-const watcher = chokidar.watch(['./src', './public'], {
-  ignored: /node_modules/,
-  persistent: true,
-  ignoreInitial: true
-});
-
-let buildStartTime;
-let hmrUpdateTime;
-
-watcher.on('change', (filePath) => {
-  hmrUpdateTime = Date.now() - buildStartTime;
-  console.log(`File changed: ${filePath} (${hmrUpdateTime}ms)`);
-  
-  // Notify all clients
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocketServer.OPEN) {
-      client.send(JSON.stringify({
-        type: 'update',
-        file: path.relative(process.cwd(), filePath),
-        time: Date.now()
-      }));
-    }
-  });
-});
-
-// Start the server
-server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`WebSocket server running on ws://localhost:${PORT}`);
-  open(`http://localhost:${PORT}`).catch(console.error);
-});
+// Export singleton instance
+export const webSocketService = new BananaWebSocket();

@@ -1,0 +1,110 @@
+/* Banana/src/styles/components/CodeBlock.css */
+.code-block-container {
+    margin: 1.5rem 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .code-block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #2d2d2d;
+    padding: 0.5rem 1rem;
+  }
+  
+  .language-label {
+    color: #ccc;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .copy-button {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border: none;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .copy-button:hover {
+    background: rgba(255,255,255,0.2);
+  }
+  
+  .code-block {
+    margin: 0 !important;
+    padding: 1rem !important;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    background-color: #1e1e1e !important;
+    overflow-x: auto;
+  }
+  
+  .line-number {
+    display: inline-block;
+    width: 2em;
+    user-select: none;
+    opacity: 0.3;
+    color: #ccc;
+    margin-right: 1em;
+  }
+  
+  .token.comment,
+  .token.prolog,
+  .token.doctype,
+  .token.cdata {
+    color: #6a9955;
+  }
+  
+  .token.punctuation {
+    color: #d4d4d4;
+  }
+  
+  .token.property,
+  .token.tag,
+  .token.boolean,
+  .token.number,
+  .token.constant,
+  .token.symbol,
+  .token.deleted {
+    color: #b5cea8;
+  }
+  
+  .token.selector,
+  .token.attr-name,
+  .token.string,
+  .token.char,
+  .token.builtin,
+  .token.inserted {
+    color: #ce9178;
+  }
+  
+  .token.operator,
+  .token.entity,
+  .token.url,
+  .language-css .token.string,
+  .style .token.string {
+    color: #d4d4d4;
+  }
+  
+  .token.atrule,
+  .token.attr-value,
+  .token.keyword {
+    color: #569cd6;
+  }
+  
+  .token.function,
+  .token.class-name {
+    color: #dcdcaa;
+  }
+  
+  .token.regex,
+  .token.important,
+  .token.variable {
+    color: #d16969;
+  }

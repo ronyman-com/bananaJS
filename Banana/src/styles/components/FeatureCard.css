@@ -1,0 +1,43 @@
+.feature-card {
+    background: white;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.2s;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .feature-card h3 {
+    color: #5a3e1f;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  
+  .feature-card p {
+    color: #7a5c3c;
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
+  
+  .feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    background: #f9f4e8;
+  }
+  
+  @media (max-width: 768px) {
+    .feature-card {
+      padding: 1.5rem;
+    }
+    
+    .feature-icon {
+      font-size: 2rem;
+    }
+  }

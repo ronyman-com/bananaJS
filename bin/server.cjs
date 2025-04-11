@@ -5,6 +5,17 @@ const WebSocket = require('ws');
 const chokidar = require('chokidar');
 const http = require('http');
 const os = require('os');
+const history = require('connect-history-api-fallback');
+const createWebSocketServer = require('./websocket.cjs');
+
+const app = express();
+const port = process.env.PORT || 5000;
+const host = process.env.HOST || 'localhost';
+const publicDir = process.env.PUBLIC_DIR || path.join(process.cwd(), 'public');
+const shouldOpen = process.env.OPEN_BROWSER === 'true';
+
+// Create HTTP server
+const server = http.createServer(app);
 
 // --- Logging Setup ---
 const logger = {
@@ -31,7 +42,6 @@ const OPEN_BROWSER = process.env.OPEN_BROWSER === 'true';
 
 // --- Directory Configuration ---
 let projectRoot = process.env.PROJECT_ROOT || process.cwd();
-let publicDir = process.env.PUBLIC_DIR || path.join(projectRoot, NODE_ENV === 'production' ? 'dist' : 'public');
 let srcDir = process.env.SRC_DIR || (NODE_ENV === 'development' ? path.join(projectRoot, 'src') : null);
 
 // Fallback logic for production if dist doesn't exist
@@ -86,10 +96,16 @@ if (fs.existsSync(createAppPath)) {
 }
 
 // --- Initialize Server ---
-const app = express();
 app.use(express.json());
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+app.use((req, res, next) => {
+    // Set proper CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+  });
+
+
 
 // Performance tracking
 let buildStartTime;
@@ -101,6 +117,25 @@ app.use((req, res, next) => {
     logger.debug(`Request: ${req.method} ${req.originalUrl}`);
     next();
 });
+
+// Middleware to handle SPA fallback
+app.use(history({
+    rewrites: [
+        {
+            from: /^\/api\/.*$/,
+            to: function(context) {
+                return context.parsedUrl.pathname;
+            }
+        },
+        {
+            // Don't rewrite files with extensions
+            from: /\/[^/]+\.[^/]+$/,
+            to: function(context) {
+                return context.parsedUrl.pathname;
+            }
+        }
+    ]
+}));
 
 // Static file serving
 const staticOptions = {
@@ -118,6 +153,29 @@ if (NODE_ENV === 'development' && srcDirExists) {
     logger.info(`Setting up static file serving for /src from: ${srcDir}`);
     app.use('/src', express.static(srcDir, staticOptions));
 }
+
+
+
+// Custom middleware to handle static files and API routes
+app.use((req, res, next) => {
+    const filePath = path.join(publicDir, req.path);
+
+// Check if it's an API route
+if (req.path.startsWith('/api/')) {
+    return next(); // Let API routes pass through
+  }
+
+  // Check if file exists
+  fs.stat(filePath, (err, stats) => {
+    if (!err && stats.isFile()) {
+      // Serve the existing file directly
+      express.static(publicDir)(req, res, next);
+    } else {
+      // Forward to SPA handler
+      next();
+    }
+  });
+});
 
 // --- API Endpoints ---
 app.get('/api/status', (req, res) => {
@@ -240,6 +298,8 @@ app.post('/api/create-app', async (req, res) => {
 });
 
 // --- WebSocket and HMR ---
+const wss = new WebSocket.Server({ server });
+
 if (NODE_ENV === 'development') {
     logger.info('Development mode: Setting up WebSocket and HMR...');
     const watchPaths = [publicDir];
@@ -322,7 +382,7 @@ app.get('/dashboard', (req, res, next) => {
     }
 });
 
-// SPA Fallback Route
+// Fixed SPA Fallback Route
 app.get('*', (req, res) => {
     logger.debug(`SPA Fallback: Handling request for ${req.path}`);
     if (req.path.includes('.') && !req.path.endsWith('.html')) {
@@ -420,6 +480,10 @@ server.listen(PORT, HOST, () => {
             throw error;
     }
 });
+
+
+
+
 
 // --- Graceful Shutdown ---
 const shutdown = (signal) => {

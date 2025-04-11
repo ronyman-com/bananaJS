@@ -1,0 +1,75 @@
+.code-example {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background: white;
+  }
+  
+  .example-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #f0e6d2;
+  }
+  
+  .example-header h3 {
+    color: #5a3e1f;
+    margin: 0 0 0.5rem;
+  }
+  
+  .example-header p {
+    color: #7a5c3c;
+    margin: 0;
+  }
+  
+  .example-code {
+    position: relative;
+    background: #f9f4e8;
+  }
+  
+  .copy-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(255,255,255,0.8);
+    border: 1px solid #f0e6d2;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .copy-btn:hover {
+    background: white;
+  }
+  
+  .code-block {
+    padding: 1.5rem !important;
+    margin: 0 !important;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    overflow-x: auto;
+  }
+  
+  .example-footer {
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid #f0e6d2;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .example-type {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-weight: bold;
+  }
+  
+  .example-type.banana {
+    background: #f5e6ca;
+    color: #e67a00;
+  }
+  
+  .example-type.react {
+    background: #e6f5fc;
+    color: #61dafb;
+  }

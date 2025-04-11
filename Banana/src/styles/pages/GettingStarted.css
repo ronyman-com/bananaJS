@@ -1,0 +1,105 @@
+.getting-started {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .getting-started h1 {
+    color: #e67a00;
+    margin-bottom: 2rem;
+    font-size: 2.5rem;
+  }
+  
+  .getting-started h2 {
+    color: #5a3e1f;
+    margin-top: 3rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #f0e6d2;
+  }
+  
+  .getting-started h3 {
+    color: #7a5c3c;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .getting-started p {
+    color: #5a3e1f;
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+  }
+  
+  .getting-started ul, 
+  .getting-started ol {
+    margin-bottom: 2rem;
+    padding-left: 1.5rem;
+    color: #5a3e1f;
+  }
+  
+  .getting-started li {
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+  }
+  
+  .getting-started a {
+    color: #e67a00;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .getting-started a:hover {
+    text-decoration: underline;
+  }
+  
+  .step {
+    margin-bottom: 3rem;
+  }
+  
+  .step-number {
+    display: inline-block;
+    background-color: #e67a00;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 30px;
+    margin-right: 0.75rem;
+    font-weight: bold;
+  }
+  
+  .note {
+    background-color: #f9f4e8;
+    border-left: 4px solid #e67a00;
+    padding: 1rem;
+    margin: 1.5rem 0;
+    border-radius: 0 4px 4px 0;
+  }
+  
+  .note p {
+    margin: 0;
+  }
+  
+  .warning {
+    background-color: #fff3f3;
+    border-left: 4px solid #ff6b6b;
+    padding: 1rem;
+    margin: 1.5rem 0;
+    border-radius: 0 4px 4px 0;
+  }
+  
+  .warning p {
+    margin: 0;
+    color: #5a3e1f;
+  }
+  
+  @media (max-width: 768px) {
+    .getting-started {
+      padding: 1rem;
+    }
+    
+    .getting-started h1 {
+      font-size: 2rem;
+    }
+  }
