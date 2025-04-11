@@ -436,23 +436,24 @@
     ///// Create Project From here.
     async function createProject() {
   const projectName = document.getElementById('projectName').value.trim();
+  const initGit = document.getElementById('initGit').checked;
   
   try {
+    showNotification(`Creating project "${projectName}"...`, 'info');
+    
     const response = await fetch('/api/create-project', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ projectName })
+      body: JSON.stringify({ 
+        projectName,  // Must match API parameter name
+        initGit 
+      })
     });
 
     const result = await response.json();
     
     if (!result.success) {
-      let errorMsg = result.error;
-      if (result.details) {
-        errorMsg += `\n• Tried: ${result.details.attemptedPath || 'Unknown path'}`;
-        errorMsg += `\n• Fix: ${result.details.solution || 'Check server logs'}`;
-      }
-      throw new Error(errorMsg);
+      throw new Error(result.error || 'Failed to create project');
     }
 
     showNotification(result.message, 'success');
@@ -460,7 +461,7 @@
     refreshFileTree();
 
   } catch (error) {
-    showNotification(error.message.replace(/\n/g, '<br>'), 'error');
+    showNotification(error.message, 'error');
     console.error('Project creation failed:', error);
   }
 }
@@ -546,29 +547,6 @@
       // Request metrics every 5 seconds
       setInterval(requestMetrics, 5000);
     });
-
-
-
-    // Verify template location on startup
-const verifyTemplate = () => {
-  const expected = 'Projects/templates/default';
-  const resolved = path.join(__dirname, '../Projects/templates/default');
-  
-  console.log('\n=== Template Path Verification ===');
-  console.log('Expected Location:', expected);
-  console.log('Resolved Path:', resolved);
-  console.log('Directory Exists:', fs.existsSync(resolved));
-  
-  if (!fs.existsSync(resolved)) {
-    console.error('ERROR: Template not found at expected location!');
-    console.log('Possible solutions:');
-    console.log('1. Create the template directory at:', resolved);
-    console.log('2. Update the path in api-server.js');
-    process.exit(1);
-  }
-};
-
-verifyTemplate();
     
   </script>
 </body>
