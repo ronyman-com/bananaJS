@@ -208,46 +208,37 @@ app.get('/api/status', (req, res) => {
     });
 });
 
-app.get('/api/files', (req, res) => {
-    logger.debug(`GET /api/files received. Query:`, req.query);
-    const { directory } = req.query;
-    const baseDir = path.resolve(projectRoot, directory || '');
-    logger.debug(`/api/files: Resolved base directory: ${baseDir}`);
-
-    if (!baseDir.startsWith(projectRoot)) {
-        logger.warn(`/api/files: Attempt to access directory outside project root: ${baseDir}`);
-        return res.status(400).json({ success: false, message: 'Invalid directory path.' });
-    }
-
-    if (!fs.existsSync(baseDir) || !fs.statSync(baseDir).isDirectory()) {
-        logger.warn(`/api/files: Directory not found or not a directory: ${baseDir}`);
-        return res.status(404).json({ success: false, message: `Directory "${path.relative(projectRoot, baseDir)}" does not exist or is not a directory.` });
-    }
-
+// In your server routes
+app.get('/api/files', async (req, res) => {
     try {
-        logger.debug(`/api/files: Reading directory: ${baseDir}`);
-        const files = [];
-        const items = fs.readdirSync(baseDir);
-        items.forEach(item => {
-            const fullPath = path.join(baseDir, item);
-            try {
-                const stat = fs.statSync(fullPath);
-                files.push({
-                    name: item,
-                    path: path.relative(projectRoot, fullPath).replace(/\\/g, '/'),
-                    isDirectory: stat.isDirectory()
-                });
-            } catch (statErr) {
-                logger.error(`/api/files: Error stating file ${fullPath}:`, statErr.code || statErr.message);
-            }
-        });
-        logger.debug(`/api/files: Sending ${files.length} items.`);
-        res.json({ success: true, files });
-    } catch (readErr) {
-        logger.error(`/api/files: Error reading directory ${baseDir}:`, readErr);
-        res.status(500).json({ success: false, message: 'Error reading directory contents.' });
+      const { directory = '' } = req.query;
+      const fullPath = path.join(process.cwd(), '/workspace', directory);
+      
+      // Verify the path is within allowed directory
+      if (!fullPath.startsWith(path.join(process.cwd(), ''))) {
+        return res.status(400).json({ error: 'Access denied' });
+      }
+  
+      // Read directory contents
+      const items = await fs.readdir(fullPath);
+      const files = await Promise.all(items.map(async (item) => {
+        const itemPath = path.join(fullPath, item);
+        const stats = await fs.stat(itemPath);
+        
+        return {
+          name: item,
+          path: path.relative(path.join(process.cwd(), '/workspace'), itemPath),
+          isDirectory: stats.isDirectory(),
+          size: stats.isFile() ? stats.size : 0,
+          modified: stats.mtime
+        };
+      }));
+  
+      res.json(files);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
-});
+  });
 
 const createProject = require('../lib/create-project.cjs');
 
