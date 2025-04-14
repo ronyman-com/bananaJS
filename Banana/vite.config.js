@@ -5,6 +5,10 @@ import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    port: 5000,
+    middlewareMode: true
+  },
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
@@ -24,6 +28,8 @@ export default defineConfig({
   },
   esbuild: {
     jsx: 'automatic',
-    jsxImportSource: 'react'
+    jsxImportSource: 'react',
+    loader: 'jsx',
   }
 });
+

@@ -2,31 +2,25 @@ const express = require('express');
 const path = require('path');
 const WebSocket = require('ws');
 const fs = require('fs');
+const { exec } = require('child_process');
+const { createApp, createProject } = require('../lib/shared/create-utils.cjs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve static files from public directory
+// Middleware
+app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Middleware to handle .html extension and clean URLs
+// Handle .html extension and clean URLs
 app.use((req, res, next) => {
-  // Check if the request has no file extension
   if (!path.extname(req.path)) {
     const filePath = path.join(__dirname, '../public', `${req.path}.html`);
-    
-    // Check if the HTML file exists
     fs.access(filePath, fs.constants.F_OK, (err) => {
-      if (err) {
-        // File doesn't exist, continue to next middleware
-        next();
-      } else {
-        // File exists, serve it
-        res.sendFile(filePath);
-      }
+      if (err) next();
+      else res.sendFile(filePath);
     });
   } else {
-    // Request has an extension, continue normally
     next();
   }
 });
@@ -51,6 +45,66 @@ app.get('/api/files', (req, res) => {
   }
 });
 
+// CLI Execution Endpoint
+app.post('/api/execute-cli', (req, res) => {
+  const { command, args } = req.body;
+  
+  if (!command || !args) {
+    return res.status(400).json({ error: 'Missing command or arguments' });
+  }
+
+  // Construct the CLI command
+  let cmd = `node ${path.join(__dirname, '../bin/cli.cjs')} ${command} ${args.name}`;
+  if (args.gitInit) cmd += ' --git-init';
+  if (args.useYarn) cmd += ' --use-yarn';
+
+  // Set up streaming response
+  res.setHeader('Content-Type', 'text/plain');
+  res.status(200);
+
+  // Execute the command
+  const child = exec(cmd, { cwd: path.join(__dirname, '..') });
+
+  // Stream output to client
+  child.stdout.on('data', (data) => res.write(data));
+  child.stderr.on('data', (data) => res.write(data));
+
+  child.on('close', (code) => {
+    if (code !== 0) {
+      res.write(`\nProcess exited with code ${code}`);
+    }
+    res.end();
+  });
+});
+
+// Create App Endpoint
+app.post('/api/create/app', async (req, res) => {
+  try {
+    const { name, template } = req.body;
+    const result = await createApp(name, template);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// Create Project Endpoint
+app.post('/api/create/project', async (req, res) => {
+  try {
+    const { name, template } = req.body;
+    const result = await createProject(name, template);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 // Create HTTP server
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
@@ -67,7 +121,7 @@ wss.on('connection', (ws) => {
     type: 'metrics',
     data: {
       memory: process.memoryUsage().rss,
-      cpu: 0, // You'd need a real CPU monitoring solution
+      cpu: 0,
       buildTime: 0,
       hmrUpdateTime: 0
     }
@@ -79,7 +133,6 @@ wss.on('connection', (ws) => {
     try {
       const parsed = JSON.parse(message);
       if (parsed.type === 'request-metrics') {
-        // Send updated metrics
         ws.send(JSON.stringify(initialMetrics));
       }
     } catch (error) {
@@ -102,6 +155,42 @@ wss.on('connection', (ws) => {
     clearInterval(hmrInterval);
   });
 });
+
+
+
+// In your API route file (e.g., routes/projects.js)
+router.post('/create-project', async (req, res) => {
+  try {
+    // Debugging: Log exactly what's received
+    console.log('API Received:', {
+      body: req.body,
+      headers: req.headers
+    });
+
+    // Mimic CLI argument handling
+    const { name, git = false, packageManager = 'npm' } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ 
+        error: 'Invalid project name',
+        received: req.body // Show what actually came through
+      });
+    }
+
+    // IMPORTANT: Use the same creation logic as your CLI
+    const { createProject } = require('../../bin/lib/create-project');
+    const result = await createProject(name, { git, packageManager });
+
+    res.json({ success: true, ...result });
+
+  } catch (error) {
+    res.status(500).json({ 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
 
 // Watch for file changes (for HMR simulation)
 if (process.env.NODE_ENV === 'development') {
@@ -127,37 +216,3 @@ if (process.env.NODE_ENV === 'development') {
     });
   });
 }
-
-
-// Add these routes to your server.js
-const { createApp, createProject } = require('../lib/shared/create-utils.cjs');
-const express = require('express');
-const router = express.Router();
-
-router.post('/api/create/app', express.json(), async (req, res) => {
-  try {
-    const { name, template } = req.body;
-    const result = await createApp(name, template);
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
-  }
-});
-
-router.post('/api/create/project', express.json(), async (req, res) => {
-  try {
-    const { name, template } = req.body;
-    const result = await createProject(name, template);
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
-  }
-});
-
-app.use(router);

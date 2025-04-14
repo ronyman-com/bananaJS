@@ -177,6 +177,25 @@ if (req.path.startsWith('/api/')) {
   });
 });
 
+
+
+
+// Add this right after your logger configuration
+const mime = require('mime-types');
+express.static.mime.define({
+  'application/javascript': ['jsx'],
+  'text/jsx': ['jsx'] // Fallback
+});
+
+// Add this middleware before your static file serving
+app.use((req, res, next) => {
+  if (req.url.endsWith('.jsx')) {
+    res.set('Content-Type', 'application/javascript');
+  }
+  next();
+});
+
+
 // --- API Endpoints ---
 app.get('/api/status', (req, res) => {
     res.json({
@@ -230,39 +249,41 @@ app.get('/api/files', (req, res) => {
     }
 });
 
-app.post('/api/create-project', (req, res) => {
-    logger.debug(`POST /api/create-project received. Body:`, req.body);
-    const { projectName } = req.body;
-    if (!projectName || typeof projectName !== 'string' || !/^[a-zA-Z0-9._-]+$/.test(projectName)) {
-        logger.warn(`/api/create-project: Invalid project name: ${projectName}`);
-        return res.status(400).json({ success: false, message: 'Invalid project name (use letters, numbers, underscore, dot, hyphen).' });
-    }
+const createProject = require('../lib/create-project.cjs');
 
-    const projectDir = path.join(projectRoot, projectName);
-    logger.debug(`/api/create-project: Target project directory: ${projectDir}`);
+app.post('/api/create-project', express.json(), async (req, res) => {
+  try {
+    // Destructure with same options as CLI
+    const { 
+      name: projectName, 
+      git = false, 
+      packageManager = 'npm' 
+    } = req.body;
 
-    if (fs.existsSync(projectDir)) {
-        logger.warn(`/api/create-project: Project directory already exists: ${projectDir}`);
-        return res.status(400).json({ success: false, message: `Project "${projectName}" already exists.` });
-    }
+    // Call the shared createProject function
+    const result = await createProject(projectName, {
+      git,
+      packageManager
+    });
 
-    const templateDir = path.resolve(__dirname, '..', 'templates', 'default');
-    logger.debug(`/api/create-project: Using template directory: ${templateDir}`);
+    res.json({
+      success: true,
+      projectDir: path.relative(process.cwd(), result.projectDir),
+      projectName: result.projectName,
+      packageManager: result.packageManager
+    });
 
-    if (!fs.existsSync(templateDir)) {
-        logger.error(`/api/create-project: Template directory not found at ${templateDir}`);
-        return res.status(500).json({ success: false, message: 'Default project template not found on server.' });
-    }
-
-    try {
-        logger.debug(`/api/create-project: Copying template from ${templateDir} to ${projectDir}`);
-        fs.copySync(templateDir, projectDir);
-        logger.debug(`/api/create-project: Project created successfully: ${projectName}`);
-        res.json({ success: true, message: `Project "${projectName}" created successfully!` });
-    } catch (copyErr) {
-        logger.error(`/api/create-project: Error copying template to ${projectDir}:`, copyErr);
-        res.status(500).json({ success: false, message: 'Failed to create project from template.' });
-    }
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+      // Include debug info in development
+      ...(process.env.NODE_ENV === 'development' && {
+        stack: error.stack,
+        receivedBody: req.body
+      })
+    });
+  }
 });
 
 app.post('/api/create-app', async (req, res) => {
