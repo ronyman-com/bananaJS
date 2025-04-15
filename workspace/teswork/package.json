@@ -1,0 +1,33 @@
+{
+    "name": "{{project-name}}",
+    "version": "0.0.1",
+    "scripts": {
+      "dev": "banana dev",
+      "serve": "banana serve",
+      "start": "banana start",
+      "build": "banana build",
+      "build-css": "banana build --css",
+      "create-app": "banana create-app",
+      "create-project": "banana create-project"
+    },
+    "bin": {
+      "banana": "../bin/cli.cjs"
+    },
+    "dependencies": {
+      "@ronyman/bananajs": "{{banana-version}}",
+      "react": "^18.0.0",
+      "react-dom": "^18.0.0",
+      "typescript": "^5.0.0"
+    },
+    "devDependencies": {
+      "esbuild": "^0.15.0",
+      "sass": "^1.32.0",
+      "tailwindcss": "^3.4.1",
+      "postcss": "^8.4.35",
+      "autoprefixer": "^10.4.16"
+    },
+    "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react"
+  }
+  }

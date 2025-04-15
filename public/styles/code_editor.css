@@ -1,0 +1,83 @@
+/* public/styles/code_editor.css - Enhanced version */
+
+/* Editor container */
+#editor-container {
+  width: 100%;
+  height: calc(100vh - 60px);
+  border: 1px solid #2d3748;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* Monaco Editor overrides */
+.monaco-editor {
+  --vscode-editor-background: #1a202c !important;
+  --vscode-editor-foreground: #e2e8f0 !important;
+  --vscode-editorLineNumber-foreground: #4a5568 !important;
+}
+
+/* Editor theming */
+.monaco-editor .margin {
+  background-color: #1a202c !important;
+}
+
+/* Scrollbar styling */
+.monaco-editor .scrollbar.vertical .slider {
+  background-color: #4a5568 !important;
+}
+
+/* Modal enhancements */
+#modal {
+  z-index: 1000;
+  background-color: rgba(26, 32, 44, 0.8);
+}
+
+/* File tree improvements */
+#file-tree {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+#file-tree li {
+  cursor: pointer;
+  user-select: none;
+  padding: 8px 12px;
+  transition: background-color 0.2s ease;
+  border-radius: 4px;
+  margin: 2px 0;
+}
+
+#file-tree li:hover {
+  background-color: #2d3748;
+}
+
+#file-tree li.folder {
+  font-weight: 600;
+  color: #63b3ed;
+}
+
+#file-tree li.file {
+  color: #a0aec0;
+}
+
+/* Status bar */
+.editor-status {
+  background-color: #2d3748;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: #e2e8f0;
+}
+
+
+/* Terminal container */
+#terminal {
+  padding: 10px;
+  height: 100%;
+  width: 100%;
+  background-color: #1a1a1a;
+}
+
+/* Terminal cursor */
+.xterm-cursor {
+  background-color: #ffffff !important;
+}

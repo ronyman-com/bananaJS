@@ -5,6 +5,10 @@ const fs = require('fs');
 const { exec } = require('child_process');
 const { createApp, createProject } = require('../lib/shared/create-utils.cjs');
 
+
+// Serve static files from lib directory
+app.use('/lib', express.static(path.join(__dirname, '../lib')));
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -27,7 +31,7 @@ app.use((req, res, next) => {
 
 // API routes
 app.get('/api/files', (req, res) => {
-  const directory = req.query.directory || '';
+  const directory = req.query.directory || 'workspace';
   const fullPath = path.join(__dirname, '../', directory);
   
   try {
@@ -77,16 +81,44 @@ app.post('/api/execute-cli', (req, res) => {
   });
 });
 
+
+// Ensure workspace directory exists
+async function ensureWorkspace() {
+  const workspacePath = path.join(process.cwd(), 'workspace');
+  try {
+    await fs.mkdir(workspacePath, { recursive: true });
+    return workspacePath;
+  } catch (error) {
+    throw new Error(`Failed to create workspace directory: ${error.message}`);
+  }
+}
+
 // Create App Endpoint
 app.post('/api/create/app', async (req, res) => {
   try {
     const { name, template } = req.body;
-    const result = await createApp(name, template);
-    res.json(result);
+    
+    if (!name || !template) {
+      return res.status(400).json({
+        success: false,
+        message: 'Both name and template are required'
+      });
+    }
+
+    const workspacePath = await ensureWorkspace();
+    const result = await createApp(name, template, { parentPath: workspacePath });
+
+    res.json({
+      success: true,
+      ...result,
+      workspacePath: path.relative(process.cwd(), workspacePath)
+    });
   } catch (error) {
+    console.error('App creation error:', error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
+      code: error.code // Include system error code if available
     });
   }
 });
@@ -94,13 +126,33 @@ app.post('/api/create/app', async (req, res) => {
 // Create Project Endpoint
 app.post('/api/create/project', async (req, res) => {
   try {
-    const { name, template } = req.body;
-    const result = await createProject(name, template);
-    res.json(result);
+    const { name, template, packageManager = 'npm', initGit = false } = req.body;
+    
+    if (!name || !template) {
+      return res.status(400).json({
+        success: false,
+        message: 'Both name and template are required'
+      });
+    }
+
+    const workspacePath = await ensureWorkspace();
+    const result = await createProject(name, template, { 
+      parentPath: workspacePath,
+      packageManager,
+      initGit
+    });
+
+    res.json({
+      success: true,
+      ...result,
+      workspacePath: path.relative(process.cwd(), workspacePath)
+    });
   } catch (error) {
+    console.error('Project creation error:', error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
+      code: error.code
     });
   }
 });

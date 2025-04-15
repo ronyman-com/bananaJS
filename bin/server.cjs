@@ -243,41 +243,46 @@ app.get('/api/files', async (req, res) => {
 const createProject = require('../lib/create-project.cjs');
 
 app.post('/api/create-project', express.json(), async (req, res) => {
-  try {
-    // Destructure with same options as CLI
-    const { 
-      name: projectName, 
-      git = false, 
-      packageManager = 'npm' 
-    } = req.body;
+    try {
+      const { 
+        name: projectName, 
+        git = false, 
+        packageManager = 'npm' 
+      } = req.body;
+  
+      // Define workspace directory
+      const workspaceDir = path.join(process.cwd(), 'workspace');
+      
+      // Ensure workspace directory exists
+      await fs.mkdir(workspaceDir, { recursive: true });
+  
+      // Call createProject with the workspace directory as base
+      const result = await createProject(projectName, {
+        git,
+        packageManager,
+        parentPath: workspaceDir // Assuming createProject accepts this option
+      });
+  
+      res.json({
+        success: true,
+        projectDir: path.relative(process.cwd(), result.projectDir),
+        projectName: result.projectName,
+        packageManager: result.packageManager
+      });
+  
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        error: error.message,
+        ...(process.env.NODE_ENV === 'development' && {
+          stack: error.stack,
+          receivedBody: req.body
+        })
+      });
+    }
+  });
 
-    // Call the shared createProject function
-    const result = await createProject(projectName, {
-      git,
-      packageManager
-    });
-
-    res.json({
-      success: true,
-      projectDir: path.relative(process.cwd(), result.projectDir),
-      projectName: result.projectName,
-      packageManager: result.packageManager
-    });
-
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      error: error.message,
-      // Include debug info in development
-      ...(process.env.NODE_ENV === 'development' && {
-        stack: error.stack,
-        receivedBody: req.body
-      })
-    });
-  }
-});
-
-app.post('/api/create-app', async (req, res) => {
+  app.post('/api/create-app', async (req, res) => {
     logger.debug(`POST /api/create-app received. Body:`, req.body);
     try {
         const { appName, template } = req.body;
@@ -286,8 +291,15 @@ app.post('/api/create-app', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Missing appName or template in request body.' });
         }
         
+        // Define workspace directory
+        const workspaceDir = path.join(process.cwd(), 'workspace');
+        await fs.mkdir(workspaceDir, { recursive: true });
+        
         logger.debug(`/api/create-app: Calling createApp with name "${appName}" and template "${template}"`);
-        const result = await createApp(appName, template);
+        const result = await createApp(appName, template, {
+            parentPath: workspaceDir // Assuming createApp accepts this option
+        });
+        
         if (!result || typeof result.appDir !== 'string') {
             logger.error(`/api/create-app: createApp did not return expected object with appDir string. Received:`, result);
             throw new Error('Invalid response from createApp module.');
@@ -295,7 +307,7 @@ app.post('/api/create-app', async (req, res) => {
         
         const { appDir } = result;
         logger.debug(`/api/create-app: createApp returned appDir: ${appDir}`);
-        const relativeAppDir = path.relative(projectRoot, appDir).replace(/\\/g, '/');
+        const relativeAppDir = path.relative(process.cwd(), appDir).replace(/\\/g, '/workspace');
         
         logger.debug(`/api/create-app: App created successfully at relative path: ${relativeAppDir}`);
         res.json({ 
@@ -308,6 +320,33 @@ app.post('/api/create-app', async (req, res) => {
         res.status(500).json({ success: false, message: err.message || 'Failed to create app.' });
     }
 });
+
+
+
+app.post('/api/create-file', async (req, res) => {
+    try {
+      const { path: filePath, name, template = 'empty', content = '' } = req.body;
+      const fullPath = path.join(process.cwd(), filePath, name);
+      const result = await createFile(fullPath, { template, content });
+      res.json(result);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+  
+  app.post('/api/create-folder', async (req, res) => {
+    try {
+      const { path: folderPath, name } = req.body;
+      const fullPath = path.join(process.cwd(), folderPath, name);
+      const result = await createFolder(fullPath);
+      res.json(result);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+  
+
+
 
 // --- WebSocket and HMR ---
 const wss = new WebSocket.Server({ server });

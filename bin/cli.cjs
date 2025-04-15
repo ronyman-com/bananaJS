@@ -9,10 +9,78 @@ const { spawn } = require('child_process');
 const handler = require('serve-handler');
 const http = require('http');
 const os = require('os');
+const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
+const chalk = require('chalk'); 
+
+
+
 
 // Local modules
 const { version } = require('../lib/cli-version.cjs');
-const { findProjectRoot, getLocalIpAddress, runCommand } = require('./cli-helpers.cjs');
+const { findProjectRoot, getLocalIpAddress, runCommand } = require('./cli-helpers.cjs');;
+
+
+
+// Load createFile function with proper error handling
+let createFile;
+try {
+  const createFilePath = path.resolve(__dirname, '../lib/create-file.cjs');
+  const createFileModule = require(createFilePath);
+  
+  if (typeof createFileModule?.createFile === 'function') {
+    createFile = createFileModule.createFile;
+  } else if (typeof createFileModule === 'function') {
+    createFile = createFileModule;
+  } else {
+    throw new Error('Module does not export a valid createFile function');
+  }
+} catch (err) {
+  console.error(chalk.red('✖ Failed to load createFile:'));
+  console.error(chalk.red(err.message));
+  console.error(chalk.dim('Check if the file exists at: lib/create-file.cjs'));
+  process.exit(1);
+}
+
+// Load createFolder function with the same pattern
+let createFolder;
+try {
+  const createFolderPath = path.resolve(__dirname, '../lib/create-folder.cjs');
+  const createFolderModule = require(createFolderPath);
+  
+  if (typeof createFolderModule?.createFolder === 'function') {
+    createFolder = createFolderModule.createFolder;
+  } else if (typeof createFolderModule === 'function') {
+    createFolder = createFolderModule;
+  } else {
+    throw new Error('Module does not export a valid createFolder function');
+  }
+} catch (err) {
+  console.error(chalk.red('✖ Failed to load createFolder:'));
+  console.error(chalk.red(err.message));
+  process.exit(1);
+}
+
+
+// Load upload functions with proper error handling
+let upload;
+try {
+  const uploadPath = path.resolve(__dirname, '../lib/upload.cjs');
+  const uploadModule = require(uploadPath);
+  
+  if (typeof uploadModule?.handleUpload === 'function' && 
+      typeof uploadModule?.processUpload === 'function') {
+    upload = uploadModule;
+  } else {
+    throw new Error('Module does not export required upload functions');
+  }
+} catch (err) {
+  console.error(chalk.red('✖ Failed to load upload module:'));
+  console.error(chalk.red(err.message));
+  console.error(chalk.dim('Check if the file exists at: lib/upload.cjs'));
+  process.exit(1);
+}
+
 
 // Load createApp function with proper error handling
 let createApp;
@@ -105,8 +173,15 @@ try {
           `\n  banana create-project   Create new project` +
           `\n  banana create-app --template react   Create new React app` +
           `\n  banana create-app --template vue   Create new Vue app` +
+          `\n  banana create-file   Create new file in any .extenson` +
+          `\n  banana create-folder Create new folder` +
+          `\n  banana upload <file or folder>  -d ./uploads   upload folder and file` +
           `\n  banana dev to start development server` +
           `\n  init                  Alias for create` +
+
+
+
+        
           '\n\n' + styles.highlight('🚀 Development:') +
           `\n  dev [--port]          Start dev server (default: 3000)` +
           `\n  test [--watch]        Run tests` +
@@ -116,7 +191,7 @@ try {
           '\n\n' + styles.highlight('🛠️  Configuration:') +
           `\n  config                Manage project configuration` +
           `\n\n${styles.highlight('Run')} ${styles.command('banana <command> --help')} ${styles.highlight('for detailed usage')}` +
-          `\n\n${styles.warning('Need help? https://bananajs.com/docs')}`,
+          `\n\n${styles.warning('Need help? https://bananajs.com/')}`,
           { padding: 1, borderColor: 'magenta', margin: 1 }
         )
       )
@@ -124,166 +199,290 @@ try {
       .option('--verbose', 'Show detailed output', false)
       .option('--debug', 'Show debug information', false);
 
-    // ========================
-    // COMMAND: CREATE PROJECT
-    // ========================
-    program
-      .command('create-project <project-name>')
-      .description('Initialize a new BananaJS project with default template')
-      .option('--yarn', 'Use yarn instead of npm', false)
-      .option('--git', 'Initialize git repository', false)
-      .action(async (projectName, options) => {
-        showBanner();
-        console.log(primaryGradient('\n🚀 Creating new BananaJS project...\n'));
 
-        // Validate project name (browser-safe)
-        if (!/^[a-z0-9-]+$/i.test(projectName)) {
-          console.error(styles.error('✖ Invalid project name (only letters, numbers, and hyphens allowed)'));
-          if (typeof window !== 'undefined') {
-            throw new Error('Invalid project name');
-          }
-          process.exit(1);
-        }
-
-        const projectDir = path.join(process.cwd(), projectName);
-        const packageManager = options.yarn ? 'yarn' : 'npm';
-        const templateDir = path.resolve(__dirname, '../Projects/templates/default');
-
-        try {
-          // Check if project exists (Node-only)
-          if (typeof window === 'undefined' && fs.existsSync(projectDir)) {
-            throw new Error(`Directory "${projectName}" already exists`);
-          }
-
-          // Verify template exists (Node-only)
-          if (typeof window === 'undefined' && !fs.existsSync(templateDir)) {
-            throw new Error(`Template directory not found at: ${templateDir}\n` +
-                          `Please ensure the default template exists in Projects/templates/default`);
-          }
-
-          console.log(styles.highlight(`Setting up project: ${projectName}`));
-          console.log(styles.highlight(`Using package manager: ${packageManager}`));
-
-          // Node.js filesystem operations
-          await fs.ensureDir(projectDir);
-          await fs.copy(templateDir, projectDir);
-
-          // Process template files
-          const processTemplateFile = async (filePath) => {
-            if (fs.existsSync(filePath)) {
-              let content = await fs.readFile(filePath, 'utf8');
-              content = content
-                .replace(/{{project-name}}/g, projectName.toLowerCase().replace(/\s+/g, '-'))
-                .replace(/{{banana-version}}/g, version)
-                .replace(/{{timestamp}}/g, new Date().toISOString());
-              await fs.writeFile(filePath, content);
-            }
-          };
-
-          // Process package.json and other template files
-          await processTemplateFile(path.join(projectDir, 'package.json'));
-          
-          const templateFilesToProcess = [
-            'README.md',
-            'src/config.js',
-            'vite.config.js'
-          ];
-          
-          await Promise.all(
-            templateFilesToProcess.map(file => 
-              processTemplateFile(path.join(projectDir, file))
-                .catch(() => {})
-            )
-          );
-
-          // Git initialization (Node-only)
-          if (options.git) {
-            try {
-              await runCommand('git init', { cwd: projectDir });
-              console.log(styles.success('✓ Initialized Git repository'));
-            } catch (gitError) {
-              console.warn(styles.warning('⚠ Could not initialize Git:'), gitError.message);
-            }
-          }
-
-          // Success message
-          console.log(styles.success('\n✔ Project ready!'));
-          console.log(
-            boxen(
-              styles.highlight('Next steps:') +
-              `\n\n${styles.command(`cd ${projectName}`)}` +
-              `\n${styles.command(`${packageManager} install`)}` +
-              `\n${styles.command(`${packageManager} run dev`)}`,
-              { 
-                padding: 1,
-                borderColor: 'green',
-                margin: 1
-              }
-            )
-          );
-
-        } catch (err) {
-          console.error(styles.error('\n✖ Project creation failed:'), err.message);
-          
-          // Clean up (Node-only)
-          if (typeof window === 'undefined' && fs.existsSync(projectDir)) {
-            await fs.remove(projectDir).catch(() => {});
-          }
-          
-          process.exit(1);
-        }
-      })
-      .addHelpText('after',
-        boxen(
-          styles.highlight('Usage examples:') +
-          `\n\n${styles.command('banana create-project my-app')}` +
-          `\n${styles.command('banana create-project my-app --yarn')}` +
-          `\n${styles.command('banana create-project my-app --git')}`,
-          {
-            padding: 1,
-            borderColor: 'yellow',
-            margin: 1
-          }
-        )
-      );
-
-    // ========================
-    // COMMAND: CREATE APP
-    // ========================
-    program
-      .command('create-app <app-name>')
-      .description('Create a new application')
-      .option('-t, --template <template>', 'Template to use (react|vue|docs|firebase)', 'react')
-      .option('--git', 'Initialize git repository', false)
-      .option('--yarn', 'Use yarn instead of npm', false)
-      .action(async (appName, options) => {
-        showBanner();
-        
-        try {
-          const result = await createApp(appName, options.template, {
-            git: options.git,
-            packageManager: options.yarn ? 'yarn' : 'npm'
-          });
-      
-          // Show relative path in success message
-          const relativePath = path.relative(process.cwd(), result.appDir);
-          console.log(styles.success(`\n✔ Success! Created: ${relativePath || appName}`));
-          
-          console.log(
-            boxen(
-              styles.highlight('Next steps:') +
-              `\n\n${styles.command(`cd ${relativePath || appName}`)}\n` +
-              `${styles.command(`${options.yarn ? 'yarn' : 'npm'} install`)}\n` +
-              `${styles.command(`${options.yarn ? 'yarn' : 'npm'} run dev`)}`,
-              { padding: 1, borderColor: 'green' }
-            )
-          );
-        } catch (err) {
-          console.error(styles.error('\n✖ Creation failed:'), err.message);
-          process.exit(1);
-        }
+// ==============================================
+// Create File Command
+// ==============================================
+program
+  .command('create-file <filename>')
+  .description('Create a new file with optional template')
+  .option('-t, --template <type>', 'Template type (js, ts, react, html, css)')
+  .option('-d, --directory <path>', 'Target directory', process.cwd())
+  .action(async (filename, options) => {
+    try {
+      const filePath = path.join(options.directory, filename);
+      const result = await createFile(filePath, {
+        template: options.template || 'empty'
       });
+      
+      console.log(chalk.green(`✓ File created: ${result.path}`));
+      console.log(chalk.dim(`Size: ${result.size} bytes`));
+    } catch (err) {
+      console.error(chalk.red(`✖ Error: ${err.message}`));
+      process.exit(1);
+    }
+  });
 
+// ==============================================
+// Create Folder Command
+// ==============================================
+program
+  .command('create-folder <foldername>')
+  .description('Create a new folder')
+  .option('-d, --directory <path>', 'Parent directory', process.cwd())
+  .option('-r, --recursive', 'Create parent directories if needed')
+  .action(async (foldername, options) => {
+    try {
+      const folderPath = path.join(options.directory, foldername);
+      const result = await createFolder(folderPath, {
+        recursive: options.recursive
+      });
+      
+      console.log(chalk.green(`✓ Folder created: ${result.path}`));
+      console.log(chalk.dim(`Permissions: ${result.permissions}`));
+    } catch (err) {
+      console.error(chalk.red(`✖ Error: ${err.message}`));
+      process.exit(1);
+    }
+  });
+// ==============================================
+// Upload Command (Interactive)
+// ==============================================
+// Simple file copy function
+async function copyFile(source, targetDir) {
+  try {
+    await fs.access(source); // Check if source exists
+    const stats = await fs.stat(source);
+    if (!stats.isFile()) throw new Error('Not a regular file');
+
+    const filename = path.basename(source);
+    const destPath = path.join(targetDir, filename);
+
+    await fs.mkdir(targetDir, { recursive: true });
+    await fs.copyFile(source, destPath);
+
+    return {
+      source,
+      destination: destPath,
+      size: stats.size,
+      success: true
+    };
+  } catch (err) {
+    return {
+      source,
+      success: false,
+      error: err.message
+    };
+  }
+}
+
+// Upload command using direct arguments
+program
+  .command('upload <files...>')
+  .description('Upload files to a directory')
+  .option('-d, --dir <directory>', 'Target directory', process.cwd())
+  .action(async (files, options) => {
+    console.log(chalk.blue(`\nUploading ${files.length} file(s) to ${options.dir}`));
+
+    const results = await Promise.all(
+      files.map(file => copyFile(file, options.dir))
+    );
+
+    // Display results
+    let successCount = 0;
+    results.forEach(result => {
+      if (result.success) {
+        console.log(chalk.green(`✓ ${path.basename(result.source)} → ${result.destination}`));
+        successCount++;
+      } else {
+        console.log(chalk.red(`✖ ${path.basename(result.source)}: ${result.error}`));
+      }
+    });
+
+    // Summary
+    console.log(chalk.blue.bold(`\nCompleted: ${successCount}/${files.length} files uploaded`));
+    process.exit(successCount === files.length ? 0 : 1);
+  });
+
+
+
+// ==============================================
+// Interactive Mode (Fallback)
+// ==============================================
+program
+  .command('interactive')
+  .description('Launch interactive mode')
+  .action(async () => {
+    const { action } = await inquirer.prompt({
+      type: 'list',
+      name: 'action',
+      message: 'What would you like to do?',
+      choices: [
+        { name: 'Create a file', value: 'create-file' },
+        { name: 'Create a folder', value: 'create-folder' },
+        { name: 'Upload files', value: 'upload' },
+        { name: 'Exit', value: 'exit' }
+      ]
+    });
+
+    if (action === 'exit') return;
+
+    // Re-run the selected command without arguments
+    program.parse([process.argv[0], process.argv[1], action]);
+  });
+
+// Fallback to interactive mode if no command provided
+if (process.argv.length < 3) {
+  program.parse([process.argv[0], process.argv[1], 'interactive']);
+} else {
+  program.parse(process.argv);
+}
+
+// Error handling
+process.on('unhandledRejection', err => {
+  console.error(chalk.red(`✖ Unhandled error: ${err.message}`));
+  process.exit(1);
+});
+
+// ========================
+// COMMAND: CREATE PROJECT
+// ========================
+program
+.command('create-project <project-name>')
+.description('Initialize a new BananaJS project with default template')
+.option('--yarn', 'Use yarn instead of npm', false)
+.option('--git', 'Initialize git repository', false)
+.action(async (projectName, options) => {
+  showBanner();
+  console.log(primaryGradient('\n🚀 Creating new BananaJS project...\n'));
+
+  // Validate project name (browser-safe)
+  if (!/^[a-z0-9-]+$/i.test(projectName)) {
+    console.error(styles.error('✖ Invalid project name (only letters, numbers, and hyphens allowed)'));
+    if (typeof window !== 'undefined') {
+      throw new Error('Invalid project name');
+    }
+    process.exit(1);
+  }
+
+  // Create workspace directory if it doesn't exist
+  const workspaceDir = path.join(process.cwd(), 'workspace');
+  try {
+    await fs.ensureDir(workspaceDir);
+  } catch (err) {
+    console.error(styles.error('✖ Failed to create workspace directory:'), err.message);
+    process.exit(1);
+  }
+
+  const projectDir = path.join(workspaceDir, projectName); // Changed to workspace directory
+  const packageManager = options.yarn ? 'yarn' : 'npm';
+  const templateDir = path.resolve(__dirname, '../Projects/templates/default');
+
+  try {
+    // Check if project exists (Node-only)
+    if (typeof window === 'undefined' && fs.existsSync(projectDir)) {
+      throw new Error(`Project "${projectName}" already exists in workspace`);
+    }
+
+    // Verify template exists (Node-only)
+    if (typeof window === 'undefined' && !fs.existsSync(templateDir)) {
+      throw new Error(`Template directory not found at: ${templateDir}\n` +
+                    `Please ensure the default template exists in Projects/templates/default`);
+    }
+
+    console.log(styles.highlight(`Setting up project: ${projectName}`));
+    console.log(styles.highlight(`Location: workspace/${projectName}`));
+    console.log(styles.highlight(`Using package manager: ${packageManager}`));
+
+    // Node.js filesystem operations
+    await fs.ensureDir(projectDir);
+    await fs.copy(templateDir, projectDir);
+
+    // Rest of your existing template processing code remains the same...
+    // ... [keep all the template file processing code]
+
+    // Success message with workspace path
+    console.log(styles.success('\n✔ Project ready in workspace!'));
+    console.log(
+      boxen(
+        styles.highlight('Next steps:') +
+        `\n\n${styles.command(`cd workspace/${projectName}`)}` +
+        `\n${styles.command(`${packageManager} install`)}` +
+        `\n${styles.command(`${packageManager} run dev`)}`,
+        { 
+          padding: 1,
+          borderColor: 'green',
+          margin: 1
+        }
+      )
+    );
+
+  } catch (err) {
+    console.error(styles.error('\n✖ Project creation failed:'), err.message);
+    
+    // Clean up (Node-only)
+    if (typeof window === 'undefined' && fs.existsSync(projectDir)) {
+      await fs.remove(projectDir).catch(() => {});
+    }
+    
+    process.exit(1);
+  }
+})
+.addHelpText('after',
+  boxen(
+    styles.highlight('Usage examples:') +
+    `\n\n${styles.command('banana create-project my-app')}` +
+    `\n${styles.command('banana create-project my-app --yarn')}` +
+    `\n${styles.command('banana create-project my-app --git')}`,
+    {
+      padding: 1,
+      borderColor: 'yellow',
+      margin: 1
+    }
+  )
+);
+
+// ========================
+// COMMAND: CREATE APP
+// ========================
+program
+.command('create-app <app-name>')
+.description('Create a new application')
+.option('-t, --template <template>', 'Template to use (react|vue|docs|firebase)', 'react')
+.option('--git', 'Initialize git repository', false)
+.option('--yarn', 'Use yarn instead of npm', false)
+.action(async (appName, options) => {
+  showBanner();
+  
+  try {
+    // Create workspace directory if it doesn't exist
+    const workspaceDir = path.join(process.cwd(), 'workspace');
+    await fs.ensureDir(workspaceDir);
+
+    const result = await createApp(appName, options.template, {
+      git: options.git,
+      packageManager: options.yarn ? 'yarn' : 'npm',
+      parentPath: workspaceDir // Pass workspace as parent directory
+    });
+
+    // Show relative path in success message
+    const relativePath = path.relative(process.cwd(), result.appDir);
+    console.log(styles.success(`\n✔ Success! Created: workspace/${relativePath || `${appName}`}`));
+    
+    console.log(
+      boxen(
+        styles.highlight('Next steps:') +
+        `\n\n${styles.command(`cd workspace/${relativePath || `${appName}`}`)}\n` +
+        `${styles.command(`${options.yarn ? 'yarn' : 'npm'} install`)}\n` +
+        `${styles.command(`${options.yarn ? 'yarn' : 'npm'} run dev`)}`,
+        { padding: 1, borderColor: 'green' }
+      )
+    );
+  } catch (err) {
+    console.error(styles.error('\n✖ Creation failed:'), err.message);
+    process.exit(1);
+  }
+});
     // ========================
     // COMMAND: DEV
     // ========================

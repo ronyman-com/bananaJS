@@ -6,7 +6,21 @@
   <title>BananaJS Development Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.1.0/css/xterm.min.css">
+  <script src="/styles/code_editor.css"></script>
+  <script src="/scripts/terminal/code_editor.js"></script>
+  <script type="module" src="/scripts/dashboard.js"></script>
+  <!-- Add these scripts before your dashboard.js -->
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.1.0/lib/xterm.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.5.0/lib/xterm-addon-fit.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.8.0/lib/xterm-addon-web-links.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.1.0/lib/xterm.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.5.0/lib/xterm-addon-fit.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
+<script src="https://kit.fontawesome.com/af67804f51.js" crossorigin="anonymous"></script>
+
+ 
   <style>
+    /* Combined and optimized CSS */
     .file-tree {
       max-height: 500px;
       overflow-y: auto;
@@ -44,36 +58,44 @@
     .file-tree li:hover .file-actions {
       display: inline-block;
     }
+    
+    /* Enhanced notifications */
     .notification {
       position: fixed;
       bottom: 20px;
       right: 20px;
       padding: 15px 25px;
-      border-radius: 5px;
+      border-radius: 8px;
       z-index: 1000;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-      animation: slideIn 0.3s, fadeOut 0.5s 2.5s forwards;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      max-width: 400px;
+      animation: slideIn 0.3s, fadeOut 0.5s 4.5s forwards;
+      cursor: pointer;
     }
-    @keyframes slideIn {
-      from { transform: translateX(100%); }
-      to { transform: translateX(0); }
+    .notification-icon {
+      margin-right: 12px;
+      font-size: 24px;
     }
-    @keyframes fadeOut {
-      from { opacity: 1; }
-      to { opacity: 0; }
-    }
-    .error {
-      background-color: #f44336;
-      color: white;
-    }
-    .success {
+    .notification-success {
       background-color: #4CAF50;
       color: white;
     }
-    .info {
+    .notification-error {
+      background-color: #f44336;
+      color: white;
+    }
+    .notification-info {
       background-color: #2196F3;
       color: white;
     }
+    .notification-warning {
+      background-color: #ff9800;
+      color: white;
+    }
+    
+    /* Modal styles */
     .modal {
       display: none;
       position: fixed;
@@ -98,147 +120,308 @@
       background-color: rgba(0,0,0,0.5);
       z-index: 999;
     }
-    #download-area {
-      margin-top: 20px;
-      padding: 15px;
-      background: #2d3748;
-      border-radius: 6px;
+    
+    /* Editor styles */
+    #editor-container {
+      display: none;
+      height: calc(100vh - 60px);
     }
-    #cli-output {
-      font-family: monospace;
-      white-space: pre;
-      overflow-y: auto;
-      max-height: 200px;
-      background: #1e1e1e;
-      padding: 10px;
+    #editor {
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* Animations */
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    
+    /* Breadcrumbs */
+    .breadcrumbs {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.9em;
+    }
+    .breadcrumbs button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    .breadcrumbs button:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Terminal styles */
+    #terminal {
+      height: 400px;
+      width: 100%;
+      background: #000;
       border-radius: 4px;
-      margin-top: 10px;
+      padding: 10px;
     }
-.notification {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  padding: 15px 25px;
-  border-radius: 8px;
-  z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  display: flex;
-  align-items: center;
-  max-width: 400px;
-  animation: slideIn 0.3s, fadeOut 0.5s 4.5s forwards;
-}
-.notification-icon {
-  margin-right: 12px;
-  font-size: 24px;
-}
-.notification-success {
-  background-color: #4CAF50;
-  color: white;
-}
-.notification-error {
-  background-color: #f44336;
-  color: white;
-}
-.notification-info {
-  background-color: #2196F3;
-  color: white;
-}
-.notification-warning {
-  background-color: #ff9800;
-  color: white;
-}
-@keyframes slideIn {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-@keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-.breadcrumbs {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.9em;
-}
-.breadcrumbs button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 2px 4px;
-  border-radius: 3px;
-}
-.breadcrumbs button:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
+    
+    /* Context menu */
+    .context-menu {
+      position: absolute;
+      background: #2d3748;
+      border-radius: 4px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      z-index: 1001;
+      display: none;
+    }
+    .context-menu-item {
+      padding: 8px 16px;
+      cursor: pointer;
+    }
+    .context-menu-item:hover {
+      background: #4a5568;
+    }
+    
+    /* Loading spinner */
+    .spinner {
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .flex {
+        flex-direction: column;
+      }
+      .w-64 {
+        width: 100%;
+      }
+      #terminal {
+        height: 300px;
+      }
+    }
   </style>
 </head>
 <body class="bg-gray-900 text-white">
-  <div class="container mx-auto px-4 py-8">
-    <!-- Dashboard Section -->
-    <div class="bg-gray-800 shadow rounded-lg p-6 mb-8">
-      <h2 class="text-2xl font-bold text-yellow-400 mb-4">Development Dashboard</h2>
+  <div class="flex h-screen">
+    <!-- Sidebar Navigation -->
+    <div class="w-64 bg-gray-800 p-4 overflow-y-auto">
+      <h1 class="text-xl font-bold text-yellow-400 mb-6">BananaJS</h1>
+      <nav>
+        <ul class="space-y-2">
+          <li>
+            <button onclick="appState.showDashboard()" class="w-full text-left px-3 py-2 rounded bg-gray-700 hover:bg-gray-600 transition-colors">
+              <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+            </button>
+          </li>
+          <li>
+            <button onclick="appState.showFileManager()" class="w-full text-left px-3 py-2 rounded hover:bg-gray-700 transition-colors">
+              <i class="fas fa-folder-open mr-2"></i> File Manager
+            </button>
+          </li>
+          <li>
+            <button onclick="appState.showTerminal()" class="w-full text-left px-3 py-2 rounded hover:bg-gray-700 transition-colors">
+              <i class="fas fa-terminal mr-2"></i> Terminal
+            </button>
+          </li>
+          <li>
+            <button onclick="appState.openCreateProjectModal()" class="w-full text-left px-3 py-2 rounded hover:bg-gray-700 transition-colors">
+              <i class="fas fa-plus-circle mr-2"></i> New Project
+            </button>
+          </li>
+          <li>
+            <button onclick="appState.openCreateAppModal()" class="w-full text-left px-3 py-2 rounded hover:bg-gray-700 transition-colors">
+              <i class="fas fa-plus-circle mr-2"></i> New App
+            </button>
+          </li>
+        </ul>
+      </nav>
       
-      <div id="connection-status" class="p-3 mb-4 rounded bg-yellow-100 text-yellow-800">
-        Connecting to HMR server...
-      </div>
-
-      <div class="mb-6">
-        <h3 class="text-lg font-semibold text-gray-300 mb-2">Build Information</h3>
-        <div class="grid grid-cols-2 gap-4">
-          <div class="bg-gray-700 p-3 rounded">
-            <p class="text-sm text-gray-400">Last Build Time</p>
-            <p class="font-mono text-white" id="build-time">-- ms</p>
-          </div>
-          <div class="bg-gray-700 p-3 rounded">
-            <p class="text-sm text-gray-400">Last HMR Update</p>
-            <p class="font-mono text-white" id="hmr-update-time">-- ms</p>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h3 class="text-lg font-semibold text-gray-300 mb-2">Recent Updates</h3>
-        <ul class="space-y-2" id="hmr-updates-list"></ul>
+      <div class="mt-8 pt-4 border-t border-gray-700">
+        <h3 class="text-sm font-semibold text-gray-400 mb-2">Quick Actions</h3>
+        <button onclick="appState.runBuild()" class="w-full text-left px-3 py-2 rounded hover:bg-gray-700 text-sm transition-colors">
+          <i class="fas fa-hammer mr-2"></i> Run Build
+        </button>
+        <button onclick="appState.restartServer()" class="w-full text-left px-3 py-2 rounded hover:bg-gray-700 text-sm transition-colors mt-1">
+          <i class="fas fa-sync-alt mr-2"></i> Restart Server
+        </button>
       </div>
     </div>
 
-    <!-- File Management Section -->
-    <div class="bg-gray-800 shadow rounded-lg p-6 mb-8">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold text-yellow-400">File Management</h2>
-        <button onclick="refreshFileTree()" class="bg-yellow-400 text-gray-900 px-3 py-1 rounded text-sm font-bold hover:bg-yellow-500 transition">
-          Refresh
-        </button>
-      </div>
-      
-      <div class="metrics flex justify-center gap-4 mb-6">
-        <div class="bg-gray-700 p-3 rounded text-center min-w-[200px]">
-          <p class="text-sm text-gray-400">Memory Usage</p>
-          <p class="font-mono text-white" id="memory">0 MB</p>
+    <!-- Main Content Area -->
+    <div class="flex-1 overflow-auto">
+      <!-- Dashboard Section -->
+      <div id="dashboard-section" class="p-6">
+        <div class="bg-gray-800 shadow rounded-lg p-6 mb-8">
+          <h2 class="text-2xl font-bold text-yellow-400 mb-4">Development Dashboard</h2>
+          
+          <div id="connection-status" class="p-3 mb-4 rounded bg-yellow-100 text-yellow-800 flex items-center">
+            <i class="fas fa-circle-notch fa-spin mr-2"></i>
+            <span>Connecting to HMR server...</span>
+          </div>
+
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-300 mb-2">Build Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="bg-gray-700 p-3 rounded">
+                <p class="text-sm text-gray-400">Last Build Time</p>
+                <p class="font-mono text-white" id="build-time">-- ms</p>
+              </div>
+              <div class="bg-gray-700 p-3 rounded">
+                <p class="text-sm text-gray-400">Last HMR Update</p>
+                <p class="font-mono text-white" id="hmr-update-time">-- ms</p>
+              </div>
+              <div class="bg-gray-700 p-3 rounded">
+                <p class="text-sm text-gray-400">Project Size</p>
+                <p class="font-mono text-white" id="project-size">--</p>
+              </div>
+              <div class="bg-gray-700 p-3 rounded">
+                <p class="text-sm text-gray-400">Files Count</p>
+                <p class="font-mono text-white" id="files-count">--</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-lg font-semibold text-gray-300 mb-2">Recent Updates</h3>
+            <ul class="space-y-2" id="hmr-updates-list"></ul>
+          </div>
         </div>
-        <div class="bg-gray-700 p-3 rounded text-center min-w-[200px]">
-          <p class="text-sm text-gray-400">CPU Usage</p>
-          <p class="font-mono text-white" id="cpu">0%</p>
+        
+        <div class="bg-gray-800 shadow rounded-lg p-6">
+          <h3 class="text-lg font-semibold text-gray-300 mb-4">System Resources</h3>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-gray-700 p-4 rounded-lg">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm text-gray-400">Memory Usage</span>
+                <span class="text-xs bg-blue-600 text-white px-2 py-1 rounded" id="memory-percent">0%</span>
+              </div>
+              <div class="w-full bg-gray-600 rounded-full h-2.5">
+                <div id="memory-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+              </div>
+              <p class="font-mono text-white text-sm mt-2" id="memory">0 MB / 0 MB</p>
+            </div>
+            
+            <div class="bg-gray-700 p-4 rounded-lg">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm text-gray-400">CPU Usage</span>
+                <span class="text-xs bg-green-600 text-white px-2 py-1 rounded" id="cpu-percent">0%</span>
+              </div>
+              <div class="w-full bg-gray-600 rounded-full h-2.5">
+                <div id="cpu-bar" class="bg-green-600 h-2.5 rounded-full" style="width: 0%"></div>
+              </div>
+              <p class="font-mono text-white text-sm mt-2" id="cpu-cores">Cores: 0</p>
+            </div>
+            
+            <div class="bg-gray-700 p-4 rounded-lg">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm text-gray-400">Disk Space</span>
+                <span class="text-xs bg-purple-600 text-white px-2 py-1 rounded" id="disk-percent">0%</span>
+              </div>
+              <div class="w-full bg-gray-600 rounded-full h-2.5">
+                <div id="disk-bar" class="bg-purple-600 h-2.5 rounded-full" style="width: 0%"></div>
+              </div>
+              <p class="font-mono text-white text-sm mt-2" id="disk-space">0 GB / 0 GB</p>
+            </div>
+            
+            <div class="bg-gray-700 p-4 rounded-lg">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm text-gray-400">Network</span>
+                <span class="text-xs bg-yellow-600 text-white px-2 py-1 rounded">Active</span>
+              </div>
+              <div class="flex justify-between text-xs text-gray-400 mt-1">
+                <span>↑ <span id="network-up">0 KB/s</span></span>
+                <span>↓ <span id="network-down">0 KB/s</span></span>
+              </div>
+              <p class="font-mono text-white text-sm mt-2" id="network-status">Connected</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="actions text-center mb-6">
-        <button onclick="openCreateProjectModal()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2 rounded font-bold mr-2 transition">
-          Create Project
-        </button>
-        <button onclick="openCreateAppModal()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2 rounded font-bold transition">
-          Create App
-        </button>
-      </div>
-      
-      <div class="file-tree bg-gray-700 p-4 rounded">
-        <div id="current-path" class="text-gray-400 mb-4">Current path: /</div>
-        <ul id="file-tree" class="text-white"></ul>
+      <!-- File Manager Section -->
+      <div id="file-manager-section" class="hidden p-6">
+        <div class="bg-gray-800 shadow rounded-lg p-6 mb-8">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold text-yellow-400">File Management</h2>
+            <div>
+              <button onclick="appState.refreshFileTree()" class="bg-yellow-400 text-gray-900 px-3 py-1 rounded text-sm font-bold hover:bg-yellow-500 transition mr-2">
+                <i class="fas fa-sync-alt mr-1"></i> Refresh
+              </button>
+              <button onclick="appState.showCreateFileModal()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+                <i class="fas fa-file mr-1"></i> New File
+              </button>
+              <button onclick="appState.showCreateFolderModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm ml-2">
+                <i class="fas fa-folder mr-1"></i> New Folder
+              </button>
+              <button onclick="appState.uploadFile()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm ml-2">
+                <i class="fas fa-upload mr-1"></i> Upload
+              </button>
+            </div>
+          </div>
+          
+          <div class="file-tree bg-gray-700 p-4 rounded">
+            <div id="current-path" class="text-gray-400 mb-4 flex items-center">
+              <span>Current path: /</span>
+              <button onclick="appState.copyCurrentPath()" class="ml-2 text-xs bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded transition">
+                <i class="fas fa-copy mr-1"></i> Copy Path
+              </button>
+            </div>
+            <ul id="file-tree" class="text-white"></ul>
+          </div>
+        </div>
+
+        <!-- Editor Panel -->
+        <div id="editor-container" class="bg-gray-800 rounded-lg shadow-lg hidden">
+          <div class="bg-gray-900 p-3 flex justify-between items-center rounded-t-lg">
+            <div class="flex items-center">
+              <span id="editor-filename" class="text-sm font-mono"></span>
+              <span id="editor-status" class="text-xs ml-2 px-2 py-1 rounded hidden"></span>
+            </div>
+            <div>
+              <button onclick="appState.saveCurrentFile()" id="save-button" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm mr-2">
+                <i class="fas fa-save mr-1"></i> Save
+              </button>
+              <button onclick="appState.closeEditor()" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm">
+                <i class="fas fa-times mr-1"></i> Close
+              </button>
+            </div>
+          </div>
+          <div id="editor" style="height: calc(100vh - 150px);"></div>
+        </div>
       </div>
 
-      <div id="download-area" class="mt-4"></div>
+      <!-- Terminal Section -->
+      <div id="terminal-section" class="hidden p-6">
+        <div class="bg-gray-800 shadow rounded-lg p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold text-yellow-400">Terminal</h2>
+            <div>
+              <button onclick="appState.clearTerminal()" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm mr-2">
+                <i class="fas fa-broom mr-1"></i> Clear
+              </button>
+              <button onclick="appState.runCommand('npm start')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+                <i class="fas fa-play mr-1"></i> Start
+              </button>
+            </div>
+          </div>
+          <div id="terminal" class="w-full h-96 bg-black rounded"></div>
+          <div class="mt-4 flex">
+            <input type="text" id="terminal-input" placeholder="Enter command..." 
+                   class="flex-1 bg-gray-700 text-white px-3 py-2 rounded-l focus:outline-none focus:ring-2 focus:ring-yellow-400">
+            <button onclick="appState.sendTerminalCommand()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2 rounded-r font-bold">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -257,15 +440,18 @@
       <input type="checkbox" id="useYarn" class="mr-2">
       <label for="useYarn">Use Yarn instead of npm</label>
     </div>
+    <select id="projectTemplate" class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
+      <option value="default">Default</option>
+    </select>
     <div class="flex gap-2">
-      <button onclick="createProjectWithCLI()" class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded font-bold transition">
-        Create Project.
+      <button onclick="appState.createProjectWithCLI()" class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded font-bold transition">
+        <i class="fas fa-plus-circle mr-1"></i> Create Project
       </button>
-      <button onclick="closeModal('createProjectModal')" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded font-bold transition">
-        Cancel
+      <button onclick="appState.closeModal('createProjectModal')" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded font-bold transition">
+        <i class="fas fa-times mr-1"></i> Cancel
       </button>
     </div>
-    <div id="cli-output" class="mt-4 p-3 bg-gray-800 rounded font-mono text-sm hidden"></div>
+    <div id="cli-output" class="mt-4 p-3 bg-gray-800 rounded font-mono text-sm hidden max-h-40 overflow-y-auto"></div>
   </div>
 
   <div id="createAppModal" class="modal">
@@ -273,555 +459,149 @@
     <input type="text" id="appName" placeholder="Enter app name" 
            class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
     <select id="appTemplate" class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
-      <option value="default">Default</option>
+      <option value="react">Default</option>
       <option value="react">React</option>
       <option value="vue">Vue</option>
       <option value="firebase">Firebase</option>
       <option value="docs">Documentation</option>
     </select>
     <div class="flex gap-2">
-      <button onclick="createApp()" class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded font-bold transition">
-        Create
+      <button onclick="appState.createApp()" class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded font-bold transition">
+        <i class="fas fa-plus-circle mr-1"></i> Create
       </button>
-      <button onclick="closeModal('createAppModal')" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded font-bold transition">
-        Cancel
+      <button onclick="appState.closeModal('createAppModal')" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded font-bold transition">
+        <i class="fas fa-times mr-1"></i> Cancel
       </button>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/xterm@5.1.0/lib/xterm.min.js"></script>
-  <script>
-    // Application state
-    const appState = {
-      ws: null,
-      currentDirectory: '',
-      terminal: null,
-      hmrUpdates: []
-    };
+  <!-- Create File Modal -->
+<div id="createFileModal" class="modal hidden">
+  <div class="modal-overlay absolute inset-0 bg-black bg-opacity-50"></div>
+  <div class="modal-container fixed inset-0 flex items-center justify-center p-4">
+    <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-md transform transition-all">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold text-yellow-400">
+            <i class="fas fa-file-code mr-2"></i> Create File
+          </h3>
+          <button onclick="appState.closeModal('createFileModal')" class="text-gray-400 hover:text-white">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
 
-    // Initialize WebSocket connection
-    function initWebSocket() {
-      const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-      const wsUrl = `${protocol}${window.location.host}/ws`;
-      
-      appState.ws = new WebSocket(wsUrl);
-      
-      appState.ws.onopen = () => {
-        updateConnectionStatus(true);
-      };
-      
-      appState.ws.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          handleWebSocketMessage(message);
-        } catch (error) {
-          console.error('Error processing message:', error);
-          showNotification('Error processing server message', 'error');
-        }
-      };
-      
-      appState.ws.onclose = () => {
-        updateConnectionStatus(false);
-        setTimeout(initWebSocket, 5000);
-      };
-      
-      appState.ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        showNotification('WebSocket connection error', 'error');
-      };
-    }
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">File Name</label>
+            <input type="text" id="fileName" placeholder="index.js" 
+                   class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition">
+            <p class="text-xs text-gray-400 mt-1">Include file extension (.js, .tsx, etc.)</p>
+          </div>
 
-    function handleWebSocketMessage(message) {
-      switch (message.type) {
-        case 'metrics':
-          updateMetrics(message.data);
-          break;
-        case 'update':
-          handleHmrUpdate(message);
-          break;
-        case 'file-change':
-          showNotification(`File changed: ${message.file}`, 'info');
-          refreshFileTree();
-          break;
-        case 'build-complete':
-          showNotification('Build completed successfully', 'success');
-          updateBuildTime(message.time);
-          break;
-        case 'error':
-          showNotification(`Server error: ${message.message}`, 'error');
-          break;
-      }
-    }
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Template</label>
+            <select id="fileTemplate" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition">
+              <option value="empty">Empty File</option>
+              <option value="javascript">JavaScript</option>
+              <option value="typescript">TypeScript</option>
+              <option value="html">HTML</option>
+              <option value="css">CSS</option>
+              <option value="react">React Component</option>
+            </select>
+          </div>
 
-    function updateConnectionStatus(connected) {
-      const statusElement = document.getElementById('connection-status');
-      if (connected) {
-        statusElement.textContent = 'Connected to HMR server';
-        statusElement.className = 'p-3 mb-4 rounded bg-green-100 text-green-800';
-      } else {
-        statusElement.textContent = 'Disconnected - attempting to reconnect...';
-        statusElement.className = 'p-3 mb-4 rounded bg-yellow-100 text-yellow-800';
-      }
-    }
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Custom Content <span class="text-gray-400">(optional)</span></label>
+            <textarea id="fileCustomContent" rows="4" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white font-mono text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition"></textarea>
+          </div>
+        </div>
 
-    function updateMetrics(data) {
-      if (data.memory) {
-        document.getElementById('memory').textContent = `${(data.memory / 1024 / 1024).toFixed(2)} MB`;
-      }
-      if (data.cpu) {
-        document.getElementById('cpu').textContent = `${data.cpu.toFixed(2)}%`;
-      }
-    }
-
-    function updateBuildTime(time) {
-      document.getElementById('build-time').textContent = `${time} ms`;
-    }
-
-    function handleHmrUpdate(message) {
-      appState.hmrUpdates = [
-        ...appState.hmrUpdates.slice(-9),
-        { file: message.file, time: message.time }
-      ];
-      
-      const updatesList = document.getElementById('hmr-updates-list');
-      updatesList.innerHTML = appState.hmrUpdates.map(update => `
-        <li class="flex justify-between items-center py-2 border-b border-gray-700">
-          <span class="font-mono text-sm text-gray-300">${update.file}</span>
-          <span class="text-xs bg-blue-600 text-white px-2 py-1 rounded">
-            ${update.time} ms
-          </span>
-        </li>
-      `).join('');
-      
-      document.getElementById('hmr-update-time').textContent = `${message.time} ms`;
-    }
-
-   // File tree functionality - Enhanced Version
-async function loadFileTree(directory = '') {
-  try {
-    // Set loading state
-    appState.currentDirectory = directory || '/';
-    document.getElementById('current-path').textContent = `Current path: ${appState.currentDirectory}`;
-    document.getElementById('file-tree').innerHTML = '<li class="text-gray-400 py-2">Loading directory contents...</li>';
-
-    // Fetch directory contents from API
-    const response = await fetch(`/api/files?directory=${encodeURIComponent(appState.currentDirectory)}`);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || 'Failed to load directory contents');
-    }
-    
-    const files = await response.json();
-    renderFileTree(files);
-    
-  } catch (error) {
-    console.error('File tree error:', error);
-    showNotification(`Error: ${error.message}`, 'error');
-    showErrorState(error.message);
-  }
-}
-
-// Enhanced file tree functionality
-async function loadFileTree(directory = '') {
-  try {
-    appState.currentDirectory = directory;
-    document.getElementById('current-path').textContent = `Current path: /workspace${directory ? '/' + directory : ''}`;
-    document.getElementById('file-tree').innerHTML = '<li class="text-gray-400 py-2">Loading...</li>';
-
-    const response = await fetch(`/api/files?directory=${encodeURIComponent(directory)}`);
-    
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to load directory' }));
-      throw new Error(error.error || 'Failed to load directory');
-    }
-
-    const files = await response.json();
-    
-    // Validate response is an array
-    if (!Array.isArray(files)) {
-      throw new Error('Invalid directory listing format');
-    }
-
-    renderFileTree(files);
-  } catch (error) {
-    console.error('Directory load error:', error);
-    showNotification(`Error: ${error.message}`, 'error');
-    showErrorState(error.message);
-  }
-}
-
-function renderFileTree(files) {
-  const fileTree = document.getElementById('file-tree');
-  
-  if (!Array.isArray(files) || files.length === 0) {
-    fileTree.innerHTML = `
-      <li class="text-gray-400 py-2">
-        Empty directory
-        <button onclick="loadFileTree('')" 
-                class="ml-2 text-xs bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded transition">
-          Return to root
-        </button>
-      </li>
-    `;
-    return;
-  }
-
-  // Sort directories first
-  files.sort((a, b) => {
-    if (a.isDirectory && !b.isDirectory) return -1;
-    if (!a.isDirectory && b.isDirectory) return 1;
-    return a.name.localeCompare(b.name);
-  });
-
-  fileTree.innerHTML = files.map(file => `
-    <li class="flex items-center justify-between py-2 px-3 hover:bg-gray-700 rounded ${file.isDirectory ? 'folder' : 'file'}">
-      <div class="flex items-center">
-        ${file.isDirectory ? '📁' : '📄'}
-        <span class="item-name ml-2">${file.name}</span>
+        <div class="flex justify-end space-x-3 mt-6">
+          <button onclick="appState.closeModal('createFileModal')" class="px-4 py-2 text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 rounded transition">
+            Cancel
+          </button>
+          <button onclick="appState.createNewFile()" class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded transition">
+            Create File
+          </button>
+        </div>
       </div>
-      <div class="flex items-center">
-        ${!file.isDirectory ? `<span class="text-xs text-gray-400 mr-2">${formatFileSize(file.size)}</span>` : ''}
-        ${file.isDirectory ? 
-          '<button class="file-actions text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded">Open</button>' : 
-          ''}
-      </div>
-    </li>
-  `).join('');
-
-  // Add event listeners
-  document.querySelectorAll('.folder').forEach(folder => {
-    const folderName = folder.querySelector('.item-name').textContent;
-    const fileData = files.find(f => f.name === folderName);
-    
-    folder.addEventListener('click', (e) => {
-      if (e.target.classList.contains('file-actions') || e.target === folder) {
-        loadFileTree(fileData.path);
-      }
-    });
-  });
-}
-
-// Helper functions
-function formatFileSize(bytes) {
-  if (!bytes) return '0 B';
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return `${parseFloat((bytes / Math.pow(1024, i)).toFixed(2))} ${sizes[i]}`;
-}
-
-function showErrorState(message) {
-  document.getElementById('file-tree').innerHTML = `
-    <li class="text-red-400 py-2">
-      ${message}
-      <button onclick="loadFileTree('')" 
-              class="ml-2 text-xs bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded transition">
-        Return to root
-      </button>
-    </li>
-  `;
-}
-
-function refreshFileTree() {
-  loadFileTree(appState.currentDirectory);
-}
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
-  loadFileTree('');
-});
-
-
-
-    // Modal functions
-    function openModal(modalId) {
-      document.getElementById('modal-overlay').style.display = 'block';
-      document.getElementById(modalId).style.display = 'block';
-    }
-
-    function closeModal(modalId) {
-      document.getElementById('modal-overlay').style.display = 'none';
-      document.getElementById(modalId).style.display = 'none';
-    }
-
-    function openCreateProjectModal() {
-      document.getElementById('projectName').value = '';
-      document.getElementById('initGit').checked = false;
-      document.getElementById('useYarn').checked = false;
-      document.getElementById('cli-output').innerHTML = '';
-      document.getElementById('cli-output').classList.add('hidden');
-      openModal('createProjectModal');
-    }
-
-    function openCreateAppModal() {
-      document.getElementById('appName').value = '';
-      document.getElementById('appTemplate').value = 'default';
-      openModal('createAppModal');
-    }
-
-    async function loadFileTree(directory = '') {
-  try {
-    appState.currentDirectory = directory;
-    
-    // Update the path display with better formatting
-    const pathDisplay = document.getElementById('current-path');
-    const formattedPath = directory 
-      ? `Current path: /${directory.replace(/\\/g, '/')}` 
-      : 'Current path: /';
-    
-    pathDisplay.innerHTML = `
-      <span style="color: #a0aec0;">${formattedPath}</span>
-      ${directory ? `
-        <button onclick="loadFileTree('')" 
-                class="ml-2 text-xs bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded transition">
-          Go to root
-        </button>
-      ` : ''}
-    `;
-
-    const response = await fetch(`/api/files?directory=${encodeURIComponent(directory)}`);
-    
-    if (!response.ok) {
-      throw new Error(await response.text() || 'Failed to load directory');
-    }
-
-    const files = await response.json();
-    renderFileTree(files);
-    
-  } catch (error) {
-    console.error('File tree error:', error);
-    showNotification(`Failed to load directory: ${error.message}`, 'error');
-    
-    document.getElementById('file-tree').innerHTML = `
-      <li class="text-red-400">
-        ${error.message}
-        <button onclick="loadFileTree('')" 
-                class="ml-2 text-xs bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded transition">
-          Return to root
-        </button>
-      </li>
-    `;
-  }
-}
-
-
-function renderFileTree(files) {
-  const fileTree = document.getElementById('file-tree');
-  
-  if (!files || files.length === 0) {
-    fileTree.innerHTML = '<li class="text-gray-400">Empty directory</li>';
-    return;
-  }
-
-  // Add breadcrumb navigation if not at root
-  if (appState.currentDirectory) {
-    const parts = appState.currentDirectory.split('/');
-    let breadcrumbHtml = '<li class="breadcrumbs mb-2 pb-2 border-b border-gray-700">';
-    
-    parts.reduce((acc, part, index) => {
-      const path = acc ? `${acc}/${part}` : part;
-      breadcrumbHtml += `
-        <span class="text-gray-400">/</span>
-        <button onclick="loadFileTree('${path}')" 
-                class="text-yellow-400 hover:text-yellow-300">
-          ${part}
-        </button>
-      `;
-      return path;
-    }, '');
-
-    breadcrumbHtml += '</li>';
-    fileTree.innerHTML = breadcrumbHtml;
-  } else {
-    fileTree.innerHTML = '';
-  }
-
-  // Render files
-  files.forEach(file => {
-    const item = document.createElement('li');
-    item.className = file.isDirectory ? 'folder' : 'file';
-    item.innerHTML = `
-      <span class="item-name">${file.name}</span>
-      ${file.isDirectory ? '<span class="file-actions">Open</span>' : ''}
-    `;
-    
-    if (file.isDirectory) {
-      item.addEventListener('click', (e) => {
-        if (e.target.classList.contains('file-actions')) return;
-        const newPath = appState.currentDirectory 
-          ? `${appState.currentDirectory}/${file.name}` 
-          : file.name;
-        loadFileTree(newPath);
-      });
-    }
-    
-    fileTree.appendChild(item);
-  });
-}
-
-function showNotification(message, type = 'info', duration = 5000) {
-  const icons = {
-    success: '✓',
-    error: '✗',
-    info: 'ℹ',
-    warning: '⚠'
-  };
-  
-  const notification = document.createElement('div');
-  notification.className = `notification notification-${type}`;
-  notification.innerHTML = `
-    <span class="notification-icon">${icons[type] || icons.info}</span>
-    <span class="notification-message">${message}</span>
-  `;
-  
-  document.body.appendChild(notification);
-  
-  // Remove notification after duration
-  setTimeout(() => {
-    notification.style.animation = 'fadeOut 0.5s forwards';
-    notification.addEventListener('animationend', () => {
-      notification.remove();
-    });
-  }, duration);
-  
-  // Click to dismiss
-  notification.addEventListener('click', () => {
-    notification.style.animation = 'fadeOut 0.3s forwards';
-    notification.addEventListener('animationend', () => {
-      notification.remove();
-    });
-  });
-}
-
-// Create Project 
-async function createProjectWithCLI() {
-  const projectName = document.getElementById('projectName').value.trim();
-  const initGit = document.getElementById('initGit').checked;
-  const useYarn = document.getElementById('useYarn').checked;
-
-  try {
-    const response = await fetch('/api/create-project', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
-        name: projectName,  // Must match API expectation
-        git: initGit,
-        packageManager: useYarn ? 'yarn' : 'npm'
-      })
-    });
-
-    const result = await response.json();
-    
-    // Update your createProjectWithCLI success handler:
-if (!response.ok) {
-  throw new Error(result.error || 'Project creation failed');
-}
-
-// Enhanced success notification
-showNotification(`
-  <strong>Project created successfully!</strong>
-  <div style="margin-top: 8px; font-size: 0.9em;">
-    <div>Name: ${result.projectName}</div>
-    <div>Path: ${result.projectDir}</div>
-    <div>Package manager: ${result.packageManager}</div>
+    </div>
   </div>
-`, 'success', 8000);
+</div>
 
-// Refresh file tree starting from the new project's parent directory
-const parentDir = result.projectDir.split('/').slice(0, -1).join('/') || '/';
-loadFileTree(parentDir);
+<!-- Create Folder Modal -->
+<div id="createFolderModal" class="modal hidden">
+  <div class="modal-overlay absolute inset-0 bg-black bg-opacity-50"></div>
+  <div class="modal-container fixed inset-0 flex items-center justify-center p-4">
+    <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-md transform transition-all">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold text-yellow-400">
+            <i class="fas fa-folder-plus mr-2"></i> Create Folder
+          </h3>
+          <button onclick="appState.closeModal('createFolderModal')" class="text-gray-400 hover:text-white">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
 
-  } catch (error) {
-    showNotification(`Error: ${error.message}`, 'error');
-    console.error('Project Creation Error:', {
-      error: error.message,
-      projectName,
-      time: new Date().toISOString()
-    });
-  }
-}
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Folder Name</label>
+            <input type="text" id="folderName" placeholder="components" 
+                   class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition">
+            <p class="text-xs text-gray-400 mt-1">Only letters, numbers, and hyphens</p>
+          </div>
+        </div>
 
+        <div class="flex justify-end space-x-3 mt-6">
+          <button onclick="appState.closeModal('createFolderModal')" class="px-4 py-2 text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 rounded transition">
+            Cancel
+          </button>
+          <button onclick="appState.createNewFolder()" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition">
+            Create Folder
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
+  <div id="uploadModal" class="modal">
+    <h3 class="text-xl font-bold text-yellow-400 mb-4">Upload Files</h3>
+    <div class="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center mb-4">
+      <input type="file" id="file-upload" class="hidden" multiple>
+      <label for="file-upload" class="cursor-pointer">
+        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+        <p class="text-gray-300">Drag & drop files here or click to browse</p>
+        <p class="text-xs text-gray-500 mt-2">Max file size: 50MB</p>
+      </label>
+    </div>
+    <div id="upload-progress" class="hidden">
+      <div class="w-full bg-gray-600 rounded-full h-2.5 mb-2">
+        <div id="upload-progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+      </div>
+      <p class="text-xs text-gray-400 text-center" id="upload-status">Preparing to upload...</p>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="appState.startUpload()" id="upload-button" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded font-bold transition">
+        <i class="fas fa-upload mr-1"></i> Upload
+      </button>
+      <button onclick="appState.closeModal('uploadModal')" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded font-bold transition">
+        <i class="fas fa-times mr-1"></i> Cancel
+      </button>
+    </div>
+  </div>
 
+  <!-- Context Menu -->
+  <div id="context-menu" class="context-menu">
+    <div class="context-menu-item" onclick="appState.contextMenuAction('open')">Open</div>
+    <div class="context-menu-item" onclick="appState.contextMenuAction('rename')">Rename</div>
+    <div class="context-menu-item" onclick="appState.contextMenuAction('delete')">Delete</div>
+    <div class="context-menu-item" onclick="appState.contextMenuAction('download')">Download</div>
+    <div class="context-menu-item" onclick="appState.contextMenuAction('copy-path')">Copy Path</div>
+  </div>
 
-
-
-
-    // App Creation
-    async function createApp() {
-      const appName = document.getElementById('appName').value.trim();
-      const template = document.getElementById('appTemplate').value;
-      
-      if (!appName) {
-        showNotification('Please enter an app name', 'error');
-        return;
-      }
-      
-      if (!/^[a-z0-9-]+$/i.test(appName)) {
-        showNotification('Invalid app name (only letters, numbers, and hyphens allowed)', 'error');
-        return;
-      }
-      
-      try {
-        showNotification(`Creating app "${appName}"...`, 'info');
-        
-        const response = await fetch('/api/create-app', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ appName, template })
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-          showNotification(result.message || 'App created successfully', 'success');
-          
-          if (result.appPath) {
-            const notification = document.createElement('div');
-            notification.className = 'notification success';
-            notification.innerHTML = `
-              ${result.message}<br>
-              <small>Path: ${result.appPath}</small>
-            `;
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 5000);
-          }
-          
-          closeModal('createAppModal');
-          refreshFileTree();
-        } else {
-          throw new Error(result.error || 'Failed to create app');
-        }
-      } catch (error) {
-        showNotification(`Error: ${error.message}`, 'error');
-      }
-    }
-
-    function showNotification(message, type = 'info') {
-      const notification = document.createElement('div');
-      notification.className = `notification ${type}`;
-      notification.textContent = message;
-      document.body.appendChild(notification);
-      setTimeout(() => notification.remove(), 3000);
-    }
-
-    // Initialize application
-    document.addEventListener('DOMContentLoaded', () => {
-      initWebSocket();
-      loadFileTree();
-      
-      document.getElementById('modal-overlay').addEventListener('click', () => {
-        document.querySelectorAll('.modal').forEach(modal => {
-          modal.style.display = 'none';
-        });
-        document.getElementById('modal-overlay').style.display = 'none';
-      });
-    });
-  </script>
-  <script src="/server.js"></script>
+  <!-- Scripts -->
 
 </body>
 </html>

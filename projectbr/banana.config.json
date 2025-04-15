@@ -1,0 +1,47 @@
+{
+    "entry": "./src/main.jsx",
+    "outDir": "dist",
+    "platform": "browser",      
+    "format": "esm",            
+    "esbuild": {
+      "minify": true,
+      "sourcemap": true,
+      "jsxImportSource": "react",
+      "target": ["es2020"],      
+      "jsx": "automatic",        
+      "loader": {
+        ".ts": "tsx",           
+        ".js": "jsx",           
+        ".jsx": "jsx",
+        ".vue": "file",
+        ".scss": "css",
+        
+        ".png": "file",
+        ".jpg": "file",
+        ".jpeg": "file",
+        ".gif": "file",
+        ".svg": "file",
+        ".webp": "file",
+      
+        ".woff": "file",
+        ".woff2": "file",
+        ".ttf": "file",
+        ".eot": "file",
+        
+        ".mp4": "file",
+        ".webm": "file",
+        ".mp3": "file",
+      
+        ".pdf": "file",
+       
+        ".zip": "file"
+      }
+    },
+    "plugins": [],
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "dist"],  
+    "alias": {
+      "@": "./src",
+      "~": "./src"           
+    }
+  }
