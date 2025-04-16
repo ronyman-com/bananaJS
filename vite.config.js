@@ -107,7 +107,8 @@ export default defineConfig({
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         dashboard: fileURLToPath(new URL('./public/dashboard.html', import.meta.url)),
         docs: fileURLToPath(new URL('./public/docs.html', import.meta.url)),
-        features: fileURLToPath(new URL('./public/features.html', import.meta.url))
+        features: fileURLToPath(new URL('./public/features.html', import.meta.url)),
+        terminal: './public/js/terminal.js'
       },
       output: {
         assetFileNames: 'assets/[name].[hash].[ext]',

@@ -1,0 +1,28 @@
+{
+  "name": "plugins",
+  "version": "1.0.0",
+  "description": "bananajs plugins",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ronyman-com/bananaJS.git#main"
+  },
+  "keywords": [
+    "bananajs",
+    "plugins",
+    "ronyman",
+    "banana",
+    "vite",
+    "vue",
+    "react"
+  ],
+  "author": "Rony MAN",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ronyman-com/bananaJS/issues"
+  },
+  "homepage": "https://github.com/ronyman-com/bananaJS/tree/main#readme"
+}

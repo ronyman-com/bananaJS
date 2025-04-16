@@ -178,10 +178,6 @@ try {
           `\n  banana upload <file or folder>  -d ./uploads   upload folder and file` +
           `\n  banana dev to start development server` +
           `\n  init                  Alias for create` +
-
-
-
-        
           '\n\n' + styles.highlight('🚀 Development:') +
           `\n  dev [--port]          Start dev server (default: 3000)` +
           `\n  test [--watch]        Run tests` +
@@ -305,44 +301,6 @@ program
   });
 
 
-
-// ==============================================
-// Interactive Mode (Fallback)
-// ==============================================
-program
-  .command('interactive')
-  .description('Launch interactive mode')
-  .action(async () => {
-    const { action } = await inquirer.prompt({
-      type: 'list',
-      name: 'action',
-      message: 'What would you like to do?',
-      choices: [
-        { name: 'Create a file', value: 'create-file' },
-        { name: 'Create a folder', value: 'create-folder' },
-        { name: 'Upload files', value: 'upload' },
-        { name: 'Exit', value: 'exit' }
-      ]
-    });
-
-    if (action === 'exit') return;
-
-    // Re-run the selected command without arguments
-    program.parse([process.argv[0], process.argv[1], action]);
-  });
-
-// Fallback to interactive mode if no command provided
-if (process.argv.length < 3) {
-  program.parse([process.argv[0], process.argv[1], 'interactive']);
-} else {
-  program.parse(process.argv);
-}
-
-// Error handling
-process.on('unhandledRejection', err => {
-  console.error(chalk.red(`✖ Unhandled error: ${err.message}`));
-  process.exit(1);
-});
 
 // ========================
 // COMMAND: CREATE PROJECT

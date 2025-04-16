@@ -1,607 +1,544 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BananaJS Development Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.1.0/css/xterm.min.css">
-  <script src="/styles/code_editor.css"></script>
-  <script src="/scripts/terminal/code_editor.js"></script>
-  <script type="module" src="/scripts/dashboard.js"></script>
-  <!-- Add these scripts before your dashboard.js -->
-<script src="https://cdn.jsdelivr.net/npm/xterm@5.1.0/lib/xterm.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.5.0/lib/xterm-addon-fit.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.8.0/lib/xterm-addon-web-links.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xterm@5.1.0/lib/xterm.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.5.0/lib/xterm-addon-fit.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
-<script src="https://kit.fontawesome.com/af67804f51.js" crossorigin="anonymous"></script>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>BananaJS Development Dashboard</title>
+      <link rel="stylesheet" href="css/styles.css">
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.1.0/css/xterm.min.css">
+      <script src="https://cdn.jsdelivr.net/npm/xterm@5.1.0/lib/xterm.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
+      <script src="https://kit.fontawesome.com/af67804f51.js" crossorigin="anonymous"></script>
+      <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.7.0/lib/xterm-addon-fit.min.js"></script>
+    </head>
+    <body class="bg-gray-900 text-white">
+      <div class="flex h-screen">
+        <!-- Sidebar Navigation -->
+        <div class="w-64 bg-gray-800 p-4 overflow-y-auto">
+          <h1 class="text-xl font-bold text-yellow-400 mb-6">BananaJS</h1>
+          <nav>
+            <ul class="space-y-2">
+              <li>
+                <button data-action="dashboard" class="w-full text-left px-3 py-2 rounded bg-gray-700 hover:bg-gray-600 transition-colors">
+                  <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+                </button>
 
- 
-  <style>
-    /* Combined and optimized CSS */
-    .file-tree {
-      max-height: 500px;
-      overflow-y: auto;
-    }
-    .file-tree ul {
-      list-style-type: none;
-      padding-left: 20px;
-    }
-    .file-tree li {
-      cursor: pointer;
-      padding: 5px 0;
-      position: relative;
-    }
-    .file-tree li.folder {
-      font-weight: bold;
-      color: #ffeb3b;
-    }
-    .file-tree li.folder::before {
-      content: '📁 ';
-    }
-    .file-tree li.file {
-      color: #fff;
-    }
-    .file-tree li.file::before {
-      content: '📄 ';
-    }
-    .file-tree li .file-actions {
-      display: none;
-      position: absolute;
-      right: 0;
-      background: #333;
-      padding: 2px 5px;
-      border-radius: 3px;
-    }
-    .file-tree li:hover .file-actions {
-      display: inline-block;
-    }
-    
-    /* Enhanced notifications */
-    .notification {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      padding: 15px 25px;
-      border-radius: 8px;
-      z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      display: flex;
-      align-items: center;
-      max-width: 400px;
-      animation: slideIn 0.3s, fadeOut 0.5s 4.5s forwards;
-      cursor: pointer;
-    }
-    .notification-icon {
-      margin-right: 12px;
-      font-size: 24px;
-    }
-    .notification-success {
-      background-color: #4CAF50;
-      color: white;
-    }
-    .notification-error {
-      background-color: #f44336;
-      color: white;
-    }
-    .notification-info {
-      background-color: #2196F3;
-      color: white;
-    }
-    .notification-warning {
-      background-color: #ff9800;
-      color: white;
-    }
-    
-    /* Modal styles */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: #1a1a1a;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-      z-index: 1000;
-      width: 400px;
-      max-width: 90%;
-    }
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(0,0,0,0.5);
-      z-index: 999;
-    }
-    
-    /* Editor styles */
-    #editor-container {
-      display: none;
-      height: calc(100vh - 60px);
-    }
-    #editor {
-      width: 100%;
-      height: 100%;
-    }
-    
-    /* Animations */
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes fadeOut {
-      from { opacity: 1; }
-      to { opacity: 0; }
-    }
-    
-    /* Breadcrumbs */
-    .breadcrumbs {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.9em;
-    }
-    .breadcrumbs button {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 2px 4px;
-      border-radius: 3px;
-    }
-    .breadcrumbs button:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Terminal styles */
-    #terminal {
-      height: 400px;
-      width: 100%;
-      background: #000;
-      border-radius: 4px;
-      padding: 10px;
-    }
-    
-    /* Context menu */
-    .context-menu {
-      position: absolute;
-      background: #2d3748;
-      border-radius: 4px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      z-index: 1001;
-      display: none;
-    }
-    .context-menu-item {
-      padding: 8px 16px;
-      cursor: pointer;
-    }
-    .context-menu-item:hover {
-      background: #4a5568;
-    }
-    
-    /* Loading spinner */
-    .spinner {
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-      .flex {
-        flex-direction: column;
-      }
-      .w-64 {
-        width: 100%;
-      }
-      #terminal {
-        height: 300px;
-      }
-    }
-  </style>
-</head>
-<body class="bg-gray-900 text-white">
-  <div class="flex h-screen">
-    <!-- Sidebar Navigation -->
-    <div class="w-64 bg-gray-800 p-4 overflow-y-auto">
-      <h1 class="text-xl font-bold text-yellow-400 mb-6">BananaJS</h1>
-      <nav>
-        <ul class="space-y-2">
-          <li>
-            <button onclick="appState.showDashboard()" class="w-full text-left px-3 py-2 rounded bg-gray-700 hover:bg-gray-600 transition-colors">
-              <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
-            </button>
-          </li>
-          <li>
-            <button onclick="appState.showFileManager()" class="w-full text-left px-3 py-2 rounded hover:bg-gray-700 transition-colors">
-              <i class="fas fa-folder-open mr-2"></i> File Manager
-            </button>
-          </li>
-          <li>
-            <button onclick="appState.showTerminal()" class="w-full text-left px-3 py-2 rounded hover:bg-gray-700 transition-colors">
-              <i class="fas fa-terminal mr-2"></i> Terminal
-            </button>
-          </li>
-          <li>
-            <button onclick="appState.openCreateProjectModal()" class="w-full text-left px-3 py-2 rounded hover:bg-gray-700 transition-colors">
-              <i class="fas fa-plus-circle mr-2"></i> New Project
-            </button>
-          </li>
-          <li>
-            <button onclick="appState.openCreateAppModal()" class="w-full text-left px-3 py-2 rounded hover:bg-gray-700 transition-colors">
-              <i class="fas fa-plus-circle mr-2"></i> New App
-            </button>
-          </li>
-        </ul>
-      </nav>
-      
-      <div class="mt-8 pt-4 border-t border-gray-700">
-        <h3 class="text-sm font-semibold text-gray-400 mb-2">Quick Actions</h3>
-        <button onclick="appState.runBuild()" class="w-full text-left px-3 py-2 rounded hover:bg-gray-700 text-sm transition-colors">
-          <i class="fas fa-hammer mr-2"></i> Run Build
-        </button>
-        <button onclick="appState.restartServer()" class="w-full text-left px-3 py-2 rounded hover:bg-gray-700 text-sm transition-colors mt-1">
-          <i class="fas fa-sync-alt mr-2"></i> Restart Server
-        </button>
-      </div>
-    </div>
+              </li>
+              <li>
+                <button data-action="show-file-manager" class="w-full text-left px-3 py-2 rounded hover:bg-gray-700 transition-colors">
+                  <i class="fas fa-folder-open mr-2"></i> File Manager
+                </button>
+              </li>
+              <li>
+                <button onclick="window.appState.showTerminal()" class="w-full text-left px-3 py-2 rounded hover:bg-gray-700 transition-colors">
+                  <i class="fas fa-terminal mr-2"></i> Terminal
+                </button>
+              </li>
+              <li>
+                <button onclick="window.appState.modalManager.openCreateProjectModal()" class="w-full text-left px-3 py-2 rounded hover:bg-gray-700 transition-colors">
+                  <i class="fas fa-plus-circle mr-2"></i> New Project
+                </button>
+              </li>
+              <li>
+                <button onclick="window.appState.modalManager.openCreateAppModal()" class="w-full text-left px-3 py-2 rounded hover:bg-gray-700 transition-colors">
+                  <i class="fas fa-plus-circle mr-2"></i> New App
+                </button>
+              </li>
+            </ul>
+          </nav>
 
-    <!-- Main Content Area -->
-    <div class="flex-1 overflow-auto">
-      <!-- Dashboard Section -->
-      <div id="dashboard-section" class="p-6">
-        <div class="bg-gray-800 shadow rounded-lg p-6 mb-8">
-          <h2 class="text-2xl font-bold text-yellow-400 mb-4">Development Dashboard</h2>
-          
-          <div id="connection-status" class="p-3 mb-4 rounded bg-yellow-100 text-yellow-800 flex items-center">
-            <i class="fas fa-circle-notch fa-spin mr-2"></i>
-            <span>Connecting to HMR server...</span>
-          </div>
-
-          <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-300 mb-2">Build Information</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="bg-gray-700 p-3 rounded">
-                <p class="text-sm text-gray-400">Last Build Time</p>
-                <p class="font-mono text-white" id="build-time">-- ms</p>
-              </div>
-              <div class="bg-gray-700 p-3 rounded">
-                <p class="text-sm text-gray-400">Last HMR Update</p>
-                <p class="font-mono text-white" id="hmr-update-time">-- ms</p>
-              </div>
-              <div class="bg-gray-700 p-3 rounded">
-                <p class="text-sm text-gray-400">Project Size</p>
-                <p class="font-mono text-white" id="project-size">--</p>
-              </div>
-              <div class="bg-gray-700 p-3 rounded">
-                <p class="text-sm text-gray-400">Files Count</p>
-                <p class="font-mono text-white" id="files-count">--</p>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <h3 class="text-lg font-semibold text-gray-300 mb-2">Recent Updates</h3>
-            <ul class="space-y-2" id="hmr-updates-list"></ul>
+          <div class="mt-8 pt-4 border-t border-gray-700">
+            <h3 class="text-sm font-semibold text-gray-400 mb-2">Quick Actions</h3>
+            <button data-action="run-build" class="w-full text-left px-3 py-2 rounded hover:bg-gray-700 text-sm transition-colors">
+              <i class="fas fa-hammer mr-2"></i> Run Build
+            </button>
+            <button onclick="window.appState.restartServer()" class="w-full text-left px-3 py-2 rounded hover:bg-gray-700 text-sm transition-colors mt-1">
+              <i class="fas fa-sync-alt mr-2"></i> Restart Server
+            </button>
           </div>
         </div>
-        
-        <div class="bg-gray-800 shadow rounded-lg p-6">
-          <h3 class="text-lg font-semibold text-gray-300 mb-4">System Resources</h3>
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-gray-700 p-4 rounded-lg">
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-sm text-gray-400">Memory Usage</span>
-                <span class="text-xs bg-blue-600 text-white px-2 py-1 rounded" id="memory-percent">0%</span>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 overflow-auto">
+          <!-- Dashboard Section -->
+          <div id="dashboard-section" class="p-6">
+            <div class="bg-gray-800 shadow rounded-lg p-6 mb-8">
+              <h2 class="text-2xl font-bold text-yellow-400 mb-4">Development Dashboard</h2>
+
+              <div id="connection-status" class="p-3 mb-4 rounded bg-yellow-100 text-yellow-800 flex items-center">
+                <i class="fas fa-circle-notch fa-spin mr-2"></i>
+                <span>Connecting to HMR server...</span>
               </div>
-              <div class="w-full bg-gray-600 rounded-full h-2.5">
-                <div id="memory-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+
+              <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-300 mb-2">Build Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="bg-gray-700 p-3 rounded">
+                    <p class="text-sm text-gray-400">Last Build Time</p>
+                    <p class="font-mono text-white" id="build-time">-- ms</p>
+                  </div>
+                  <div class="bg-gray-700 p-3 rounded">
+                    <p class="text-sm text-gray-400">Last HMR Update</p>
+                    <p class="font-mono text-white" id="hmr-update-time">-- ms</p>
+                  </div>
+                  <div class="bg-gray-700 p-3 rounded">
+                    <p class="text-sm text-gray-400">Project Size</p>
+                    <p class="font-mono text-white" id="project-size">--</p>
+                  </div>
+                  <div class="bg-gray-700 p-3 rounded">
+                    <p class="text-sm text-gray-400">Files Count</p>
+                    <p class="font-mono text-white" id="files-count">--</p>
+                  </div>
+                </div>
               </div>
-              <p class="font-mono text-white text-sm mt-2" id="memory">0 MB / 0 MB</p>
+
+              <div>
+                <h3 class="text-lg font-semibold text-gray-300 mb-2">Recent Updates</h3>
+                <ul class="space-y-2" id="hmr-updates-list"></ul>
+              </div>
             </div>
-            
-            <div class="bg-gray-700 p-4 rounded-lg">
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-sm text-gray-400">CPU Usage</span>
-                <span class="text-xs bg-green-600 text-white px-2 py-1 rounded" id="cpu-percent">0%</span>
+
+            <div class="bg-gray-800 shadow rounded-lg p-6">
+              <h3 class="text-lg font-semibold text-gray-300 mb-4">System Resources</h3>
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-gray-700 p-4 rounded-lg">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm text-gray-400">Memory Usage</span>
+                    <span class="text-xs bg-blue-600 text-white px-2 py-1 rounded" id="memory-percent">0%</span>
+                  </div>
+                  <div class="w-full bg-gray-600 rounded-full h-2.5">
+                    <div id="memory-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                  </div>
+                  <p class="font-mono text-white text-sm mt-2" id="memory">0 MB / 0 MB</p>
+                </div>
+
+                <div class="bg-gray-700 p-4 rounded-lg">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm text-gray-400">CPU Usage</span>
+                    <span class="text-xs bg-green-600 text-white px-2 py-1 rounded" id="cpu-percent">0%</span>
+                  </div>
+                  <div class="w-full bg-gray-600 rounded-full h-2.5">
+                    <div id="cpu-bar" class="bg-green-600 h-2.5 rounded-full" style="width: 0%"></div>
+                  </div>
+                  <p class="font-mono text-white text-sm mt-2" id="cpu-cores">Cores: 0</p>
+                </div>
+
+                <div class="bg-gray-700 p-4 rounded-lg">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm text-gray-400">Disk Space</span>
+                    <span class="text-xs bg-purple-600 text-white px-2 py-1 rounded" id="disk-percent">0%</span>
+                  </div>
+                  <div class="w-full bg-gray-600 rounded-full h-2.5">
+                    <div id="disk-bar" class="bg-purple-600 h-2.5 rounded-full" style="width: 0%"></div>
+                  </div>
+                  <p class="font-mono text-white text-sm mt-2" id="disk-space">0 GB / 0 GB</p>
+                </div>
+
+                <div class="bg-gray-700 p-4 rounded-lg">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm text-gray-400">Network</span>
+                    <span class="text-xs bg-yellow-600 text-white px-2 py-1 rounded">Active</span>
+                  </div>
+                  <div class="flex justify-between text-xs text-gray-400 mt-1">
+                    <span>↑ <span id="network-up">0 KB/s</span></span>
+                    <span>↓ <span id="network-down">0 KB/s</span></span>
+                  </div>
+                  <p class="font-mono text-white text-sm mt-2" id="network-status">Connected</p>
+                </div>
               </div>
-              <div class="w-full bg-gray-600 rounded-full h-2.5">
-                <div id="cpu-bar" class="bg-green-600 h-2.5 rounded-full" style="width: 0%"></div>
-              </div>
-              <p class="font-mono text-white text-sm mt-2" id="cpu-cores">Cores: 0</p>
-            </div>
-            
-            <div class="bg-gray-700 p-4 rounded-lg">
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-sm text-gray-400">Disk Space</span>
-                <span class="text-xs bg-purple-600 text-white px-2 py-1 rounded" id="disk-percent">0%</span>
-              </div>
-              <div class="w-full bg-gray-600 rounded-full h-2.5">
-                <div id="disk-bar" class="bg-purple-600 h-2.5 rounded-full" style="width: 0%"></div>
-              </div>
-              <p class="font-mono text-white text-sm mt-2" id="disk-space">0 GB / 0 GB</p>
-            </div>
-            
-            <div class="bg-gray-700 p-4 rounded-lg">
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-sm text-gray-400">Network</span>
-                <span class="text-xs bg-yellow-600 text-white px-2 py-1 rounded">Active</span>
-              </div>
-              <div class="flex justify-between text-xs text-gray-400 mt-1">
-                <span>↑ <span id="network-up">0 KB/s</span></span>
-                <span>↓ <span id="network-down">0 KB/s</span></span>
-              </div>
-              <p class="font-mono text-white text-sm mt-2" id="network-status">Connected</p>
             </div>
           </div>
+
+          <!-- File Manager Section -->
+          <div id="file-manager-section" class="hidden p-6">
+            <div class="bg-gray-800 shadow rounded-lg p-6 mb-8">
+              <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-yellow-400">File Management</h2>
+                <div>
+                  <button onclick="window.appState.fileManager.refreshFileTree()" class="bg-yellow-400 text-gray-900 px-3 py-1 rounded text-sm font-bold hover:bg-yellow-500 transition mr-2">
+                    <i class="fas fa-sync-alt mr-1"></i> Refresh
+                  </button>
+                  <button onclick="window.appState.modalManager.showCreateFileModal()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+                    <i class="fas fa-file mr-1"></i> New File
+                  </button>
+                  <button onclick="window.appState.modalManager.showCreateFolderModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm ml-2">
+                    <i class="fas fa-folder mr-1"></i> New Folder
+                  </button>
+                  <button onclick="window.appState.fileManager.uploadFile()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm ml-2">
+                    <i class="fas fa-upload mr-1"></i> Upload
+                  </button>
+                </div>
+              </div>
+
+              <div class="file-tree bg-gray-700 p-4 rounded">
+                <div id="current-path" class="text-gray-400 mb-4 flex items-center">
+                  <span>Current path: /</span>
+                  <button onclick="window.appState.fileManager.copyCurrentPath()" class="ml-2 text-xs bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded transition">
+                    <i class="fas fa-copy mr-1"></i> Copy Path
+                  </button>
+                </div>
+                <ul id="file-tree" class="text-white"></ul>
+              </div>
+            </div>
+
+            <!-- Editor Panel -->
+            <div id="editor-container" class="bg-gray-800 rounded-lg shadow-lg hidden">
+              <div class="bg-gray-900 p-3 flex justify-between items-center rounded-t-lg">
+                <div class="flex items-center">
+                  <span id="editor-filename" class="text-sm font-mono"></span>
+                  <span id="editor-status" class="text-xs ml-2 px-2 py-1 rounded hidden"></span>
+                </div>
+                <div>
+                  <button onclick="window.appState.editorManager.saveCurrentFile()" id="save-button" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm mr-2">
+                    <i class="fas fa-save mr-1"></i> Save
+                  </button>
+                  <button onclick="window.appState.editorManager.closeEditor()" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm">
+                    <i class="fas fa-times mr-1"></i> Close
+                  </button>
+                </div>
+              </div>
+              <div id="editor" style="height: calc(100vh - 150px);"></div>
+            </div>
+          </div>
+
+          <!-- Terminal Section -->
+          <div id="terminal-section" class="hidden p-6">
+            <div class="bg-gray-800 shadow rounded-lg p-6">
+              <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-yellow-400">Terminal</h2>
+                <div>
+                  <button id="clear-terminal" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm mr-2">
+                    <i class="fas fa-broom mr-1"></i> Clear
+                  </button>
+                  <button id="run-start" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+                    <i class="fas fa-play mr-1"></i> Start
+                  </button>
+                </div>
+              </div>
+              <!-- Remove the input field and just keep terminal container -->
+              <div id="terminal" class="w-full h-96 bg-black rounded font-mono"></div>
+            </div>
+          </div>
+
+      <!-- Modals -->
+      <div id="modal-overlay" class="modal-overlay"></div>
+
+      <div id="createProjectModal" class="modal">
+        <h3 class="text-xl font-bold text-yellow-400 mb-4">Create Project</h3>
+        <input type="text" id="projectName" placeholder="Enter project name"
+               class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
+        <div class="flex items-center mb-4">
+          <input type="checkbox" id="initGit" class="mr-2">
+          <label for="initGit">Initialize Git repository</label>
+        </div>
+        <div class="flex items-center mb-4">
+          <input type="checkbox" id="useYarn" class="mr-2">
+          <label for="useYarn">Use Yarn instead of npm</label>
+        </div>
+        <select id="projectTemplate" class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
+          <option value="default">Default</option>
+        </select>
+        <div class="flex gap-2">
+          <button onclick="window.appState.modalManager.createProjectWithCLI()" class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded font-bold transition">
+            <i class="fas fa-plus-circle mr-1"></i> Create Project
+          </button>
+          <button onclick="window.appState.modalManager.closeModal('createProjectModal')" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded font-bold transition">
+            <i class="fas fa-times mr-1"></i> Cancel
+          </button>
+        </div>
+        <div id="cli-output" class="mt-4 p-3 bg-gray-800 rounded font-mono text-sm hidden max-h-40 overflow-y-auto"></div>
+      </div>
+
+      <div id="createAppModal" class="modal">
+        <h3 class="text-xl font-bold text-yellow-400 mb-4">Create App</h3>
+        <input type="text" id="appName" placeholder="Enter app name"
+               class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
+        <select id="appTemplate" class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
+          <option value="react">Default</option>
+          <option value="react">React</option>
+          <option value="vue">Vue</option>
+          <option value="firebase">Firebase</option>
+          <option value="docs">Documentation</option>
+        </select>
+        <div class="flex gap-2">
+          <button onclick="window.appState.modalManager.createApp()" class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded font-bold transition">
+            <i class="fas fa-plus-circle mr-1"></i> Create
+          </button>
+          <button onclick="window.appState.modalManager.closeModal('createAppModal')" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded font-bold transition">
+            <i class="fas fa-times mr-1"></i> Cancel
+          </button>
         </div>
       </div>
 
-      <!-- File Manager Section -->
-      <div id="file-manager-section" class="hidden p-6">
-        <div class="bg-gray-800 shadow rounded-lg p-6 mb-8">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-bold text-yellow-400">File Management</h2>
-            <div>
-              <button onclick="appState.refreshFileTree()" class="bg-yellow-400 text-gray-900 px-3 py-1 rounded text-sm font-bold hover:bg-yellow-500 transition mr-2">
-                <i class="fas fa-sync-alt mr-1"></i> Refresh
-              </button>
-              <button onclick="appState.showCreateFileModal()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
-                <i class="fas fa-file mr-1"></i> New File
-              </button>
-              <button onclick="appState.showCreateFolderModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm ml-2">
-                <i class="fas fa-folder mr-1"></i> New Folder
-              </button>
-              <button onclick="appState.uploadFile()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm ml-2">
-                <i class="fas fa-upload mr-1"></i> Upload
-              </button>
-            </div>
-          </div>
-          
-          <div class="file-tree bg-gray-700 p-4 rounded">
-            <div id="current-path" class="text-gray-400 mb-4 flex items-center">
-              <span>Current path: /</span>
-              <button onclick="appState.copyCurrentPath()" class="ml-2 text-xs bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded transition">
-                <i class="fas fa-copy mr-1"></i> Copy Path
-              </button>
-            </div>
-            <ul id="file-tree" class="text-white"></ul>
-          </div>
-        </div>
-
-        <!-- Editor Panel -->
-        <div id="editor-container" class="bg-gray-800 rounded-lg shadow-lg hidden">
-          <div class="bg-gray-900 p-3 flex justify-between items-center rounded-t-lg">
-            <div class="flex items-center">
-              <span id="editor-filename" class="text-sm font-mono"></span>
-              <span id="editor-status" class="text-xs ml-2 px-2 py-1 rounded hidden"></span>
-            </div>
-            <div>
-              <button onclick="appState.saveCurrentFile()" id="save-button" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm mr-2">
-                <i class="fas fa-save mr-1"></i> Save
-              </button>
-              <button onclick="appState.closeEditor()" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm">
-                <i class="fas fa-times mr-1"></i> Close
-              </button>
-            </div>
-          </div>
-          <div id="editor" style="height: calc(100vh - 150px);"></div>
+      <!-- Create File Modal -->
+      <div id="createFileModal" class="modal">
+        <h3 class="text-xl font-bold text-yellow-400 mb-4">Create File</h3>
+        <input type="text" id="fileName" placeholder="Enter file name"
+               class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
+        <select id="fileTemplate" class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
+          <option value="empty">Empty File</option>
+          <option value="javascript">JavaScript</option>
+          <option value="typescript">TypeScript</option>
+          <option value="react">React Component</option>
+          <option value="html">HTML</option>
+          <option value="css">CSS</option>
+        </select>
+        <textarea id="fileCustomContent" placeholder="Custom content (optional)"
+                  class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none h-32"></textarea>
+        <div class="flex gap-2">
+          <button onclick="window.appState.fileManager.createNewFile()" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded font-bold transition">
+            <i class="fas fa-file mr-1"></i> Create File
+          </button>
+          <button onclick="window.appState.modalManager.closeModal('createFileModal')" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded font-bold transition">
+            <i class="fas fa-times mr-1"></i> Cancel
+          </button>
         </div>
       </div>
 
-      <!-- Terminal Section -->
-      <div id="terminal-section" class="hidden p-6">
-        <div class="bg-gray-800 shadow rounded-lg p-6">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-bold text-yellow-400">Terminal</h2>
-            <div>
-              <button onclick="appState.clearTerminal()" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm mr-2">
-                <i class="fas fa-broom mr-1"></i> Clear
-              </button>
-              <button onclick="appState.runCommand('npm start')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
-                <i class="fas fa-play mr-1"></i> Start
-              </button>
-            </div>
-          </div>
-          <div id="terminal" class="w-full h-96 bg-black rounded"></div>
-          <div class="mt-4 flex">
-            <input type="text" id="terminal-input" placeholder="Enter command..." 
-                   class="flex-1 bg-gray-700 text-white px-3 py-2 rounded-l focus:outline-none focus:ring-2 focus:ring-yellow-400">
-            <button onclick="appState.sendTerminalCommand()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2 rounded-r font-bold">
-              <i class="fas fa-paper-plane"></i>
-            </button>
-          </div>
+      <!-- Create Folder Modal -->
+      <div id="createFolderModal" class="modal">
+        <h3 class="text-xl font-bold text-yellow-400 mb-4">Create Folder</h3>
+        <input type="text" id="folderName" placeholder="Enter folder name"
+               class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
+        <div class="flex gap-2">
+          <button onclick="window.appState.fileManager.createNewFolder()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-bold transition">
+            <i class="fas fa-folder mr-1"></i> Create Folder
+          </button>
+          <button onclick="window.appState.modalManager.closeModal('createFolderModal')" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded font-bold transition">
+            <i class="fas fa-times mr-1"></i> Cancel
+          </button>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Modals -->
-  <div id="modal-overlay" class="modal-overlay"></div>
+      <div id="uploadModal" class="modal">
+        <h3 class="text-xl font-bold text-yellow-400 mb-4">Upload Files</h3>
+        <div class="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center mb-4">
+          <input type="file" id="file-upload" class="hidden" multiple>
+          <label for="file-upload" class="cursor-pointer">
+            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+            <p class="text-gray-300">Drag & drop files here or click to browse</p>
+            <p class="text-xs text-gray-500 mt-2">Max file size: 50MB</p>
+          </label>
+        </div>
+        <div id="upload-progress" class="hidden">
+          <div class="w-full bg-gray-600 rounded-full h-2.5 mb-2">
+            <div id="upload-progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+          </div>
+          <p class="text-xs text-gray-400 text-center" id="upload-status">Preparing to upload...</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="window.appState.fileManager.startUpload()" id="upload-button" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded font-bold transition">
+            <i class="fas fa-upload mr-1"></i> Upload
+          </button>
+          <button onclick="window.appState.modalManager.closeModal('uploadModal')" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded font-bold transition">
+            <i class="fas fa-times mr-1"></i> Cancel
+          </button>
+        </div>
+      </div>
+
+      <!-- Context Menu -->
+      <div id="context-menu" class="context-menu">
+        <div class="context-menu-item" onclick="window.appState.fileManager.contextMenuAction('open')">Open</div>
+        <div class="context-menu-item" onclick="window.appState.fileManager.contextMenuAction('rename')">Rename</div>
+        <div class="context-menu-item" onclick="window.appState.fileManager.contextMenuAction('delete')">Delete</div>
+        <div class="context-menu-item" onclick="window.appState.fileManager.contextMenuAction('download')">Download</div>
+        <div class="context-menu-item" onclick="window.appState.fileManager.contextMenuAction('copy-path')">Copy Path</div>
+      </div>
+
+     <!-- Load utility/helper files first -->
+    <!-- Core utilities first -->
+<script type="module" src="js/utils.js"></script>
+<script type="module" src="js/notifications.js"></script>
+<script type="module" src="js/modals.js"></script>
+
+<!-- Then state management -->
+<script type="module" src="js/app-state.js"></script>
+
+<!-- Then features -->
+<script type="module" src="js/websocket-manager.js"></script>
+<script type="module" src="js/terminal.js"></script>
+<script type="module" src="js/editor.js"></script>
+<script type="module" src="js/file-manager.js"></script>
+
+<!-- Initialization last -->
+<script type="module" src="js/app-init.js"></script>
+
+<!-- Load Monaco only when needed -->
+<script>
+  function loadMonaco() {
+    return new Promise((resolve) => {
+      if (window.monaco) return resolve();
+      require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
+      require(['vs/editor/editor.main'], resolve);
+    });
+  }
+
+  window.addEventListener('error', (event) => {
+  console.error('Global error:', event.error);
+  if (window.appState?.notificationManager) {
+    window.appState.notificationManager.showNotification(
+      `App error: ${event.error.message}`,
+      'error'
+    );
+  }
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled rejection:', event.reason);
+  event.preventDefault();
+});
+
+  </script>
+
+  <!-- Update your script loading at the bottom of the HTML -->
+  <script type="module">
+    import { AppState } from './js/app-state.js';
+    import { FileManager } from './js/file-manager.js';
+    import { ModalManager } from './js/modals.js';
+    import { TerminalManager } from './js/terminal.js';
+    import { EditorManager } from './js/editor.js';
+    import { NotificationManager } from './js/notifications.js';
   
-  <div id="createProjectModal" class="modal">
-    <h3 class="text-xl font-bold text-yellow-400 mb-4">Create Project</h3>
-    <input type="text" id="projectName" placeholder="Enter project name" 
-           class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
-    <div class="flex items-center mb-4">
-      <input type="checkbox" id="initGit" class="mr-2">
-      <label for="initGit">Initialize Git repository</label>
-    </div>
-    <div class="flex items-center mb-4">
-      <input type="checkbox" id="useYarn" class="mr-2">
-      <label for="useYarn">Use Yarn instead of npm</label>
-    </div>
-    <select id="projectTemplate" class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
-      <option value="default">Default</option>
-    </select>
-    <div class="flex gap-2">
-      <button onclick="appState.createProjectWithCLI()" class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded font-bold transition">
-        <i class="fas fa-plus-circle mr-1"></i> Create Project
-      </button>
-      <button onclick="appState.closeModal('createProjectModal')" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded font-bold transition">
-        <i class="fas fa-times mr-1"></i> Cancel
-      </button>
-    </div>
-    <div id="cli-output" class="mt-4 p-3 bg-gray-800 rounded font-mono text-sm hidden max-h-40 overflow-y-auto"></div>
-  </div>
+    async function initApp() {
+      // Create appState first
+      window.appState = new AppState();
+      
+      // Initialize core managers
+      window.appState.notificationManager = new NotificationManager();
+      window.appState.modalManager = new ModalManager(window.appState);
+      
+      // Then initialize others that depend on them
+      window.appState.fileManager = new FileManager(window.appState);
+      window.appState.terminalManager = new TerminalManager(window.appState);
+      window.appState.editorManager = new EditorManager(window.appState);
+      
+      // Final initialization
+      await window.appState.init();
+      
+      // Load initial view
+      window.appState.fileManager.loadFileTree();
+    }
+  
+    // Start the app when DOM is ready
+    document.addEventListener('DOMContentLoaded', initApp);
+  </script>
 
-  <div id="createAppModal" class="modal">
-    <h3 class="text-xl font-bold text-yellow-400 mb-4">Create App</h3>
-    <input type="text" id="appName" placeholder="Enter app name" 
-           class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
-    <select id="appTemplate" class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
-      <option value="react">Default</option>
-      <option value="react">React</option>
-      <option value="vue">Vue</option>
-      <option value="firebase">Firebase</option>
-      <option value="docs">Documentation</option>
-    </select>
-    <div class="flex gap-2">
-      <button onclick="appState.createApp()" class="flex-1 bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded font-bold transition">
-        <i class="fas fa-plus-circle mr-1"></i> Create
-      </button>
-      <button onclick="appState.closeModal('createAppModal')" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded font-bold transition">
-        <i class="fas fa-times mr-1"></i> Cancel
-      </button>
-    </div>
-  </div>
 
-  <!-- Create File Modal -->
-<div id="createFileModal" class="modal hidden">
-  <div class="modal-overlay absolute inset-0 bg-black bg-opacity-50"></div>
-  <div class="modal-container fixed inset-0 flex items-center justify-center p-4">
-    <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-md transform transition-all">
-      <div class="p-6">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-xl font-bold text-yellow-400">
-            <i class="fas fa-file-code mr-2"></i> Create File
-          </h3>
-          <button onclick="appState.closeModal('createFileModal')" class="text-gray-400 hover:text-white">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const terminalManager = {
+          clearTerminal: function() {
+              document.getElementById('terminal').innerHTML = '';
+          },
+          runCommand: function(command) {
+              console.log('Running command:', command);
+              // Add your terminal logic here
+          },
+          sendTerminalCommand: function() {
+              const input = document.getElementById('terminal-input');
+              const command = input.value.trim();
+              if (command) {
+                  this.runCommand(command);
+                  input.value = '';
+              }
+          }
+      };
+  
+      document.getElementById('clear-terminal').addEventListener('click', () => {
+          terminalManager.clearTerminal();
+      });
+      
+      document.getElementById('run-start').addEventListener('click', () => {
+          terminalManager.runCommand('npm start');
+      });
+      
+      // Add other event listeners as needed
+  });
+  </script>
+  <!-- In your dashboard.html -->
+<script type="module">
+  import { Terminal } from 'https://cdn.jsdelivr.net/npm/xterm@5.1.0/lib/xterm.min.js';
+  import { FitAddon } from 'https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.5.0/lib/xterm-addon-fit.min.js';
+  import { TerminalManager } from './js/terminal.js';
 
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">File Name</label>
-            <input type="text" id="fileName" placeholder="index.js" 
-                   class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition">
-            <p class="text-xs text-gray-400 mt-1">Include file extension (.js, .tsx, etc.)</p>
-          </div>
+  // Initialize when DOM is ready
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (!window.appState) {
+      console.error('appState not initialized');
+      return;
+    }
 
-          <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Template</label>
-            <select id="fileTemplate" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition">
-              <option value="empty">Empty File</option>
-              <option value="javascript">JavaScript</option>
-              <option value="typescript">TypeScript</option>
-              <option value="html">HTML</option>
-              <option value="css">CSS</option>
-              <option value="react">React Component</option>
-            </select>
-          </div>
+    // Initialize terminal manager
+    window.appState.terminalManager = new TerminalManager(window.appState);
+    
+    // Show terminal when button clicked
+    document.querySelector('[onclick="window.appState.showTerminal()"]')
+      .addEventListener('click', async () => {
+        await window.appState.terminalManager.init();
+        document.getElementById('terminal-section').classList.remove('hidden');
+      });
+  });
+</script>
+<script>
+  // Load xterm using traditional script tags
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
 
-          <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Custom Content <span class="text-gray-400">(optional)</span></label>
-            <textarea id="fileCustomContent" rows="4" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white font-mono text-sm focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition"></textarea>
-          </div>
-        </div>
+  Promise.all([
+    loadScript('https://cdn.jsdelivr.net/npm/xterm@5.1.0/lib/xterm.min.js'),
+    loadScript('https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.5.0/lib/xterm-addon-fit.min.js')
+  ]).then(() => {
+    class TerminalManager {
+      constructor(appState) {
+        this.appState = appState;
+        this.terminal = new Terminal({
+          cursorBlink: true,
+          theme: {
+            background: '#1a1a1a',
+            foreground: '#ffffff'
+          }
+        });
+        this.fitAddon = new FitAddon();
+        this.terminal.loadAddon(this.fitAddon);
+      }
 
-        <div class="flex justify-end space-x-3 mt-6">
-          <button onclick="appState.closeModal('createFileModal')" class="px-4 py-2 text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 rounded transition">
-            Cancel
-          </button>
-          <button onclick="appState.createNewFile()" class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded transition">
-            Create File
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+      init() {
+        const terminalEl = document.getElementById('terminal');
+        if (!terminalEl) {
+          console.error('Terminal element not found');
+          return;
+        }
+        
+        this.terminal.open(terminalEl);
+        this.fitAddon.fit();
+        
+        this.setupEventListeners();
+        this.terminal.writeln('Terminal ready');
+      }
 
-<!-- Create Folder Modal -->
-<div id="createFolderModal" class="modal hidden">
-  <div class="modal-overlay absolute inset-0 bg-black bg-opacity-50"></div>
-  <div class="modal-container fixed inset-0 flex items-center justify-center p-4">
-    <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-md transform transition-all">
-      <div class="p-6">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-xl font-bold text-yellow-400">
-            <i class="fas fa-folder-plus mr-2"></i> Create Folder
-          </h3>
-          <button onclick="appState.closeModal('createFolderModal')" class="text-gray-400 hover:text-white">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
+      // ... rest of your TerminalManager implementation ...
+    }
 
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Folder Name</label>
-            <input type="text" id="folderName" placeholder="components" 
-                   class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition">
-            <p class="text-xs text-gray-400 mt-1">Only letters, numbers, and hyphens</p>
-          </div>
-        </div>
-
-        <div class="flex justify-end space-x-3 mt-6">
-          <button onclick="appState.closeModal('createFolderModal')" class="px-4 py-2 text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 rounded transition">
-            Cancel
-          </button>
-          <button onclick="appState.createNewFolder()" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition">
-            Create Folder
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-  <div id="uploadModal" class="modal">
-    <h3 class="text-xl font-bold text-yellow-400 mb-4">Upload Files</h3>
-    <div class="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center mb-4">
-      <input type="file" id="file-upload" class="hidden" multiple>
-      <label for="file-upload" class="cursor-pointer">
-        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
-        <p class="text-gray-300">Drag & drop files here or click to browse</p>
-        <p class="text-xs text-gray-500 mt-2">Max file size: 50MB</p>
-      </label>
-    </div>
-    <div id="upload-progress" class="hidden">
-      <div class="w-full bg-gray-600 rounded-full h-2.5 mb-2">
-        <div id="upload-progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
-      </div>
-      <p class="text-xs text-gray-400 text-center" id="upload-status">Preparing to upload...</p>
-    </div>
-    <div class="flex gap-2">
-      <button onclick="appState.startUpload()" id="upload-button" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded font-bold transition">
-        <i class="fas fa-upload mr-1"></i> Upload
-      </button>
-      <button onclick="appState.closeModal('uploadModal')" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded font-bold transition">
-        <i class="fas fa-times mr-1"></i> Cancel
-      </button>
-    </div>
-  </div>
-
-  <!-- Context Menu -->
-  <div id="context-menu" class="context-menu">
-    <div class="context-menu-item" onclick="appState.contextMenuAction('open')">Open</div>
-    <div class="context-menu-item" onclick="appState.contextMenuAction('rename')">Rename</div>
-    <div class="context-menu-item" onclick="appState.contextMenuAction('delete')">Delete</div>
-    <div class="context-menu-item" onclick="appState.contextMenuAction('download')">Download</div>
-    <div class="context-menu-item" onclick="appState.contextMenuAction('copy-path')">Copy Path</div>
-  </div>
-
-  <!-- Scripts -->
-
-</body>
-</html>
+    // Initialize when ready
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!window.appState) {
+        console.error('appState not initialized');
+        return;
+      }
+      
+      window.appState.terminalManager = new TerminalManager(window.appState);
+    });
+  }).catch(error => {
+    console.error('Failed to load terminal scripts:', error);
+  });
+</script>
+    </body>
+    </html>

@@ -180,6 +180,12 @@ function setupThemeToggle() {
 
 // Initialize application
 function initApp() {
+
+  // Check if elements exist before using them
+  const currentYearEl = document.getElementById('current-year');
+  if (currentYearEl) {
+    currentYearEl.textContent = new Date().getFullYear();
+  }
   // Print the current year
   document.getElementById('current-year').textContent = new Date().getFullYear();
 

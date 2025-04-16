@@ -1,0 +1,25 @@
+{
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "Banana Workspace",
+  "main": "main.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ronyman-com/bananaJS.git#main"
+  },
+  "keywords": [
+    "bananajs",
+    "bannana",
+    "ronyman",
+    "workspace"
+  ],
+  "author": "Rony MAN",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ronyman-com/bananaJS/issues"
+  },
+  "homepage": "https://github.com/ronyman-com/bananaJS/tree/main#readme"
+}

@@ -4,8 +4,12 @@ const WebSocket = require('ws');
 const fs = require('fs');
 const { exec } = require('child_process');
 const { createApp, createProject } = require('../lib/shared/create-utils.cjs');
+const { spawn } = require('node-pty');
+const os = require('os');
 
 
+// In your server.js, modify the WebSocket server section:
+//const wss = new WebSocket.Server({ server });
 // Serve static files from lib directory
 app.use('/lib', express.static(path.join(__dirname, '../lib')));
 
@@ -162,12 +166,66 @@ const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-// WebSocket server for real-time updates
-const wss = new WebSocket.Server({ server });
 
+
+// Add this near your WebSocket server setup
 wss.on('connection', (ws) => {
   console.log('New WebSocket connection');
   
+  // Create PTY process for terminal
+  const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';
+  const ptyProcess = spawn(shell, [], {
+    name: 'xterm-color',
+    cols: 80,
+    rows: 30,
+    cwd: process.cwd(),
+    env: process.env
+  });
+
+  // Handle terminal data
+  ptyProcess.on('data', (data) => {
+    ws.send(JSON.stringify({
+      type: 'terminal-output',
+      data: data
+    }));
+  });
+
+  // Handle WebSocket messages
+  ws.on('message', (message) => {
+    try {
+      const parsed = JSON.parse(message);
+      
+      if (parsed.type === 'terminal-input') {
+        ptyProcess.write(parsed.data);
+      }
+      else if (parsed.type === 'terminal-resize') {
+        ptyProcess.resize(parsed.cols, parsed.rows);
+      }
+      else if (parsed.type === 'terminal-command') {
+        ptyProcess.write(parsed.command + '\r');
+      }
+      
+    } catch (error) {
+      console.error('Error processing WebSocket message:', error);
+    }
+  });
+
+  ws.on('close', () => {
+    console.log('WebSocket disconnected');
+    ptyProcess.kill();
+  });
+});
+
+// WebSocket server for real-time updates
+const wss = new WebSocket.Server({ server });
+
+wss.on('connection', (ws, req) => {
+  console.log('New WebSocket connection');
+  // Verify auth token
+  const token = req.headers['sec-websocket-protocol'];
+  if (!verifyToken(token)) {
+    return ws.close(1008, 'Unauthorized');
+  }
   // Send initial build metrics
   const initialMetrics = {
     type: 'metrics',
@@ -192,6 +250,8 @@ wss.on('connection', (ws) => {
     }
   });
 
+  
+
   // Simulate HMR updates for demo purposes
   const hmrInterval = setInterval(() => {
     const update = {
@@ -209,7 +269,50 @@ wss.on('connection', (ws) => {
 });
 
 
+const { spawn } = require('node-pty');
 
+// Add to your WebSocket server setup
+wss.on('connection', (ws) => {
+  console.log('New terminal connection');
+  
+  const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
+  const ptyProcess = spawn(shell, [], {
+    name: 'xterm-256color',
+    cols: 80,
+    rows: 24,
+    cwd: process.cwd(),
+    env: process.env
+  });
+
+  // Handle terminal data
+  ptyProcess.on('data', (data) => {
+    try {
+      ws.send(data);
+    } catch (e) {
+      // Client disconnected
+    }
+  });
+
+  // Handle WebSocket messages
+  ws.on('message', (message) => {
+    try {
+      const msg = JSON.parse(message);
+      
+      if (msg.type === 'command') {
+        ptyProcess.write(msg.command + '\r');
+      }
+      else if (msg.type === 'resize') {
+        ptyProcess.resize(msg.cols, msg.rows);
+      }
+    } catch (e) {
+      console.error('Error handling terminal message:', e);
+    }
+  });
+
+  ws.on('close', () => {
+    ptyProcess.kill();
+  });
+});
 // In your API route file (e.g., routes/projects.js)
 router.post('/create-project', async (req, res) => {
   try {
@@ -242,6 +345,96 @@ router.post('/create-project', async (req, res) => {
     });
   }
 });
+
+
+
+
+// Track terminal processes
+const terminalProcesses = new Map();
+
+wss.on('connection', (ws) => {
+  console.log('New WebSocket connection');
+  
+  // Generate unique ID for this connection
+  const connectionId = uuidv4();
+  
+  // Handle terminal messages
+  ws.on('message', (message) => {
+    try {
+      const parsed = JSON.parse(message);
+      
+      if (parsed.type === 'terminal-command') {
+        handleTerminalCommand(ws, connectionId, parsed.command);
+      }
+      else if (parsed.type === 'terminal-input') {
+        handleTerminalInput(connectionId, parsed.data);
+      }
+      else if (parsed.type === 'terminal-resize') {
+        handleTerminalResize(connectionId, parsed.cols, parsed.rows);
+      }
+      
+    } catch (error) {
+      console.error('Error processing WebSocket message:', error);
+    }
+  });
+
+  ws.on('close', () => {
+    console.log('WebSocket disconnected');
+    // Clean up terminal process
+    if (terminalProcesses.has(connectionId)) {
+      terminalProcesses.get(connectionId).kill();
+      terminalProcesses.delete(connectionId);
+    }
+  });
+});
+
+function handleTerminalCommand(ws, connectionId, command) {
+  // Create PTY process if it doesn't exist
+  if (!terminalProcesses.has(connectionId)) {
+    const ptyProcess = spawn(process.platform === 'win32' ? 'cmd.exe' : 'bash', [], {
+      cwd: process.cwd(),
+      env: process.env
+    });
+    
+    terminalProcesses.set(connectionId, ptyProcess);
+    
+    ptyProcess.on('data', (data) => {
+      ws.send(JSON.stringify({
+        type: 'terminal-output',
+        data: data.toString()
+      }));
+    });
+    
+    ptyProcess.on('exit', () => {
+      terminalProcesses.delete(connectionId);
+    });
+  }
+  
+  // Send command to process
+  terminalProcesses.get(connectionId).write(command + '\n');
+}
+
+function handleTerminalInput(connectionId, data) {
+  if (terminalProcesses.has(connectionId)) {
+    terminalProcesses.get(connectionId).write(data);
+  }
+}
+
+function handleTerminalResize(connectionId, cols, rows) {
+  if (terminalProcesses.has(connectionId)) {
+    terminalProcesses.get(connectionId).resize(cols, rows);
+  }
+}
+
+function handleTerminalCommand(ws, connectionId, command) {
+  // Validate command
+  if (command.trim() === 'rm -rf /') {
+    return ws.send(JSON.stringify({
+      type: 'terminal-output',
+      data: '\r\nDangerous command blocked!\r\n'
+    }));
+  }
+
 
 
 // Watch for file changes (for HMR simulation)

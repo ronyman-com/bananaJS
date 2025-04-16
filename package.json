@@ -56,6 +56,7 @@
     "gradient-string": "^3.0.0",
     "inquirer": "^9.2.12",
     "multer": "^1.4.5-lts.2",
+    "node-pty": "^1.0.0",
     "open": "8.4.2",
     "postcss-modules": "^6.0.1",
     "react": "^19.1.0",
@@ -66,7 +67,10 @@
     "uuid": "^11.1.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
-    "ws": "^8.18.1"
+    "ws": "^8.18.1",
+    "xterm": "^5.3.0",
+    "xterm-addon-fit": "^0.8.0",
+    "xterm-addon-web-links": "^0.9.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
@@ -84,6 +88,12 @@
   "bin": {
     "banana": "bin/cli.cjs"
   },
+  "workspaces": [
+    "uploads/*",
+    "plugins/*",
+    "marketplace/*",
+    "public/*"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ronyman-com/bananaJS.git"
@@ -91,5 +101,8 @@
   "bugs": {
     "url": "https://github.com/ronyman-com/bananaJS/issues"
   },
-  "homepage": "https://github.com/ronyman-com/bananaJS#readme"
+  "homepage": "https://github.com/ronyman-com/bananaJS#readme",
+  "directories": {
+    "lib": "lib"
+  }
 }

@@ -1,0 +1,24 @@
+{
+  "name": "projects",
+  "version": "1.0.0",
+  "description": "Banana Projects",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ronyman-com/bananaJS.git#main"
+  },
+  "keywords": [
+    "bananajs",
+    "projects",
+    "ronyman"
+  ],
+  "author": "Rony MAN",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ronyman-com/bananaJS/issues"
+  },
+  "homepage": "https://github.com/ronyman-com/bananaJS/tree/main#readme"
+}

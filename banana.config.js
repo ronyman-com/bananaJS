@@ -16,6 +16,12 @@ module.exports = {
     }
   },
   optimizeDeps: {
-    include: ['react', 'react-dom']
+    include: ['react', 'react-dom','xterm',
+      'xterm-addon-fit']
+  },
+  build: {
+    rollupOptions: {
+      external: ['xterm', 'xterm-addon-fit'] // Prevent bundling issues
+    }
   }
 };

@@ -1,0 +1,27 @@
+{
+  "name": "templates",
+  "version": "1.0.0",
+  "description": "banana app templates",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ronyman-com/bananaJS.git#main"
+  },
+  "keywords": [
+    "bananajs",
+    "app_template",
+    "ronyman"
+  ],
+  "author": "Rony MAN",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ronyman-com/bananaJS/issues"
+  },
+  "homepage": "https://github.com/ronyman-com/bananaJS/tree/main#readme"
+}
