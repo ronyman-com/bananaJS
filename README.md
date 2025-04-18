@@ -1,8 +1,8 @@
 ## Start Page
-![alt text](/public/bannan_dev_index.png)
+![alt text](/public/banana_dev_index.png)
 
 ## Create Project or App from browser.
-![alt text](/public/bannan_dev_dash.png)
+![alt text](/public/banana_dev_dash.png)
 
 ## biuld on node 18.18.2
 
