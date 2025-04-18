@@ -1,5 +1,5 @@
 {
-  "name": "appbrr",
+  "name": "test-app",
   "version": "0.0.1",
   "scripts": {
     "dev": "banana dev",

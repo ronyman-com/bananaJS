@@ -51,7 +51,7 @@
     .file-tree li:hover .file-actions {
       display: inline-block;
     }
-    
+
     /* Enhanced notifications */
     .notification {
       position: fixed;
@@ -87,7 +87,7 @@
       background-color: #ff9800;
       color: white;
     }
-    
+
     /* Modal styles */
     .modal {
       display: none;
@@ -113,7 +113,7 @@
       background-color: rgba(0,0,0,0.5);
       z-index: 999;
     }
-    
+
     /* Editor styles */
     #editor-container {
       display: none;
@@ -123,7 +123,7 @@
       width: 100%;
       height: 100%;
     }
-    
+
     /* Animations */
     @keyframes slideIn {
       from { transform: translateX(100%); opacity: 0; }
@@ -133,7 +133,7 @@
       from { opacity: 1; }
       to { opacity: 0; }
     }
-    
+
     /* Breadcrumbs */
     .breadcrumbs {
       display: flex;
@@ -152,7 +152,7 @@
     .breadcrumbs button:hover {
       background: rgba(255, 255, 255, 0.1);
     }
-    
+
     /* Terminal styles */
     #terminal {
       height: 400px;
@@ -161,7 +161,7 @@
       border-radius: 4px;
       padding: 10px;
     }
-    
+
     /* Context menu */
     .context-menu {
       position: absolute;
@@ -178,7 +178,7 @@
     .context-menu-item:hover {
       background: #4a5568;
     }
-    
+
     /* Loading spinner */
     .spinner {
       animation: spin 1s linear infinite;
@@ -187,7 +187,7 @@
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
-    
+
     /* Responsive adjustments */
     @media (max-width: 768px) {
       .flex {
@@ -231,7 +231,7 @@
           </li>
         </ul>
       </nav>
-      
+
       <div class="mt-8 pt-4 border-t border-gray-700">
         <h3 class="text-sm font-semibold text-gray-400 mb-2">Quick Actions</h3>
         <button onclick="appState.restartServer()" class="w-full text-left px-3 py-2 rounded hover:bg-gray-700 text-sm transition-colors mt-1">
@@ -246,7 +246,7 @@
       <div id="dashboard-section" class="p-6">
         <div class="bg-gray-800 shadow rounded-lg p-6 mb-8">
           <h2 class="text-2xl font-bold text-yellow-400 mb-4">Development Dashboard</h2>
-          
+
           <div id="connection-status" class="p-3 mb-4 rounded bg-yellow-100 text-yellow-800 flex items-center">
             <i class="fas fa-circle-notch fa-spin mr-2"></i>
             <span>Connecting to HMR server...</span>
@@ -279,7 +279,7 @@
             <ul class="space-y-2" id="hmr-updates-list"></ul>
           </div>
         </div>
-        
+
         <div class="bg-gray-800 shadow rounded-lg p-6">
           <h3 class="text-lg font-semibold text-gray-300 mb-4">System Resources</h3>
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -293,7 +293,7 @@
               </div>
               <p class="font-mono text-white text-sm mt-2" id="memory">0 MB / 0 MB</p>
             </div>
-            
+
             <div class="bg-gray-700 p-4 rounded-lg">
               <div class="flex justify-between items-center mb-2">
                 <span class="text-sm text-gray-400">CPU Usage</span>
@@ -304,7 +304,7 @@
               </div>
               <p class="font-mono text-white text-sm mt-2" id="cpu-cores">Cores: 0</p>
             </div>
-            
+
             <div class="bg-gray-700 p-4 rounded-lg">
               <div class="flex justify-between items-center mb-2">
                 <span class="text-sm text-gray-400">Disk Space</span>
@@ -315,7 +315,7 @@
               </div>
               <p class="font-mono text-white text-sm mt-2" id="disk-space">0 GB / 0 GB</p>
             </div>
-            
+
             <div class="bg-gray-700 p-4 rounded-lg">
               <div class="flex justify-between items-center mb-2">
                 <span class="text-sm text-gray-400">Network</span>
@@ -340,18 +340,18 @@
               <button onclick="appState.refreshFileTree()" class="bg-yellow-400 text-gray-900 px-3 py-1 rounded text-sm font-bold hover:bg-yellow-500 transition mr-2">
                 <i class="fas fa-sync-alt mr-1"></i> Refresh
               </button>
-              <button onclick="appState.showCreateFileModal()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+              <button id="new-file-button" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
                 <i class="fas fa-file mr-1"></i> New File
               </button>
-              <button onclick="appState.showCreateFolderModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm ml-2">
+              <button id="new-folder-button" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm ml-2">
                 <i class="fas fa-folder mr-1"></i> New Folder
               </button>
-              <button onclick="appState.showUploadModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm ml-2">
+              <button id="upload-button" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm ml-2">
                 <i class="fas fa-upload mr-1"></i> Upload
               </button>
             </div>
           </div>
-          
+
           <div class="file-tree bg-gray-700 p-4 rounded">
             <div id="current-path" class="text-gray-400 mb-4 flex items-center">
               <span>Current path: /</span>
@@ -382,7 +382,7 @@
           <div id="editor" style="height: calc(100vh - 150px);"></div>
         </div>
       </div>
-      
+
       <!-- Terminal Section -->
       <div id="terminal-section" class="hidden p-6">
         <div class="bg-gray-800 shadow rounded-lg p-6">
@@ -408,10 +408,10 @@
 
   <!-- Modals -->
   <div id="modal-overlay" class="modal-overlay"></div>
-  
+
   <div id="createProjectModal" class="modal">
     <h3 class="text-xl font-bold text-yellow-400 mb-4">Create Project</h3>
-    <input type="text" id="projectName" placeholder="Enter project name" 
+    <input type="text" id="projectName" placeholder="Enter project name"
            class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
     <div class="flex items-center mb-4">
       <input type="checkbox" id="initGit" class="mr-2">
@@ -440,7 +440,7 @@
 
   <div id="createAppModal" class="modal">
     <h3 class="text-xl font-bold text-yellow-400 mb-4">Create App</h3>
-    <input type="text" id="appName" placeholder="Enter app name" 
+    <input type="text" id="appName" placeholder="Enter app name"
            class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
     <select id="appTemplate" class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
       <option value="react">React</option>
@@ -461,7 +461,7 @@
   <!-- Create File Modal -->
   <div id="createFileModal" class="modal">
     <h3 class="text-xl font-bold text-yellow-400 mb-4">Create File</h3>
-    <input type="text" id="fileName" placeholder="Enter file name" 
+    <input type="text" id="fileName" placeholder="Enter file name"
            class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
     <select id="fileTemplate" class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
       <option value="empty">Empty File</option>
@@ -471,10 +471,10 @@
       <option value="html">HTML</option>
       <option value="css">CSS</option>
     </select>
-    <textarea id="fileCustomContent" placeholder="Custom content (optional)" 
+    <textarea id="fileCustomContent" placeholder="Custom content (optional)"
               class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none h-32"></textarea>
     <div class="flex gap-2">
-      <button onclick="appState.createNewFile()" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded font-bold transition">
+      <button id="create-file-button" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded font-bold transition">
         <i class="fas fa-file mr-1"></i> Create File
       </button>
       <button onclick="appState.closeModal('createFileModal')" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded font-bold transition">
@@ -486,10 +486,10 @@
   <!-- Create Folder Modal -->
   <div id="createFolderModal" class="modal">
     <h3 class="text-xl font-bold text-yellow-400 mb-4">Create Folder</h3>
-    <input type="text" id="folderName" placeholder="Enter folder name" 
+    <input type="text" id="folderName" placeholder="Enter folder name"
            class="w-full p-2 mb-4 bg-gray-800 border border-gray-600 rounded text-white focus:border-yellow-400 focus:outline-none">
     <div class="flex gap-2">
-      <button onclick="appState.createNewFolder()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-bold transition">
+      <button id="create-folder-button" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-bold transition">
         <i class="fas fa-folder mr-1"></i> Create Folder
       </button>
       <button onclick="appState.closeModal('createFolderModal')" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded font-bold transition">
@@ -515,7 +515,7 @@
       <p class="text-xs text-gray-400 text-center" id="upload-status">Preparing to upload...</p>
     </div>
     <div class="flex gap-2">
-      <button onclick="appState.startUpload()" id="upload-button" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded font-bold transition">
+      <button id="start-upload-button" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded font-bold transition">
         <i class="fas fa-upload mr-1"></i> Upload
       </button>
       <button onclick="appState.closeModal('uploadModal')" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded font-bold transition">
@@ -536,7 +536,7 @@
   <script>
     // Import the FitAddon for terminal resizing
     const { FitAddon } = window;
-    
+
     class AppState {
       constructor() {
         this.ws = null;
@@ -566,11 +566,6 @@
 
         // Make methods available globally
         window.appState = this;
-        window.showDashboard = () => this.showDashboard();
-        window.showFileManager = () => this.showFileManager();
-        window.showTerminal = () => this.showTerminal();
-        window.openCreateProjectModal = () => this.openCreateProjectModal();
-        window.openCreateAppModal = () => this.openCreateAppModal();
       }
 
       showDashboard() {
@@ -622,7 +617,7 @@
         const fileInput = document.getElementById('file-upload');
         if (fileInput) fileInput.value = '';
         document.getElementById('upload-progress').classList.add('hidden');
-        document.getElementById('upload-button').disabled = false;
+        document.getElementById('start-upload-button').disabled = false;
         this.openModal('uploadModal');
       }
 
@@ -633,12 +628,11 @@
         try {
           const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
           const wsUrl = `${protocol}${window.location.host}/ws`;
-          
+
           console.log(`Connecting to WebSocket at: ${wsUrl}`);
           this.ws = new WebSocket(wsUrl);
           this.activeConnection = true;
 
-          // Set connection timeout (5 seconds)
           this.connectionTimeout = setTimeout(() => {
             if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
               console.warn('WebSocket connection timeout');
@@ -660,15 +654,17 @@
 
           this.ws.onmessage = (event) => {
             try {
-              // Handle both terminal output and JSON messages
-              if (typeof event.data === 'string' && event.data.includes('\x1b[')) {
-                if (this.terminal) this.terminal.write(event.data);
-              } else {
-                const message = JSON.parse(event.data);
-                this.processWebSocketMessage(message);
-              }
+              const message = JSON.parse(event.data);
+              this.processWebSocketMessage(message);
             } catch (error) {
-              console.error('Error processing message:', error);
+              if (error instanceof SyntaxError) {
+                if (this.terminal) {
+                  this.terminal.write(event.data.toString());
+                }
+              } else {
+                console.error('Error processing WebSocket message:', error);
+                console.error('Received data:', event.data);
+              }
             }
           };
 
@@ -707,24 +703,23 @@
             this.updateMetrics(message.metrics);
             break;
           case 'pong':
-            // Heartbeat response, no action needed
             break;
           default:
-            console.log('Unknown message type:', message.type);
+            console.log('Unknown message type:', message.type, message);
         }
       }
 
       handleConnectionFailure(reason) {
         if (!this.activeConnection) return;
-        
+
         this.activeConnection = false;
         this.updateConnectionStatus(false);
         this.cleanupWebSocket();
-        
+
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
           const delay = this.calculateReconnectDelay();
           console.log(`Attempting reconnect in ${delay}ms (${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
-          
+
           setTimeout(() => {
             this.reconnectAttempts++;
             this.initWebSocket();
@@ -737,8 +732,8 @@
 
       calculateReconnectDelay() {
         return Math.min(
-          this.baseReconnectDelay * Math.pow(2, this.reconnectAttempts),
-          30000 // Max 30 second delay
+          this.reconnectDelay * Math.pow(2, this.reconnectAttempts),
+          30000
         );
       }
 
@@ -748,7 +743,7 @@
           if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             this.ws.send(JSON.stringify({ type: 'ping', timestamp: Date.now() }));
           }
-        }, 25000); // 25 seconds
+        }, 25000);
       }
 
       startConnectionMonitoring() {
@@ -757,27 +752,23 @@
           if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
             this.handleConnectionFailure('Connection monitoring detected failure');
           }
-        }, 10000); // Check every 10 seconds
+        }, 10000);
       }
 
       cleanupWebSocket() {
         this.activeConnection = false;
-        
-        // Clear timers
+
         clearTimeout(this.connectionTimeout);
         this.stopHeartbeat();
         this.stopConnectionMonitoring();
 
-        // Clean up WebSocket
         if (this.ws) {
-          // Remove all event listeners
           this.ws.onopen = null;
           this.ws.onmessage = null;
           this.ws.onclose = null;
           this.ws.onerror = null;
-          
-          // Close if not already closed
-          if (this.ws.readyState === WebSocket.OPEN || 
+
+          if (this.ws.readyState === WebSocket.OPEN ||
               this.ws.readyState === WebSocket.CONNECTING) {
             try {
               this.ws.close(1000, 'Client cleanup');
@@ -785,7 +776,7 @@
               console.error('Error closing WebSocket:', e);
             }
           }
-          
+
           this.ws = null;
         }
       }
@@ -829,14 +820,14 @@
           this.updatePathDisplay(directory);
 
           const response = await fetch(`/api/files?directory=${encodeURIComponent(directory)}`);
-          
+
           if (!response.ok) {
             throw new Error(await response.text() || 'Failed to load directory');
           }
 
           const files = await response.json();
           this.renderFileTree(files);
-          
+
         } catch (error) {
           console.error('File tree error:', error);
           this.showNotification(`Failed to load directory: ${error.message}`, 'error');
@@ -848,19 +839,19 @@
         const pathDisplay = document.getElementById('current-path');
         if (!pathDisplay) return;
 
-        const formattedPath = directory 
-          ? `Current path: /${directory.replace(/\\/g, '/')}` 
+        const formattedPath = directory
+          ? `Current path: /${directory.replace(/\\/g, '/')}`
           : 'Current path: /';
-        
+
         pathDisplay.innerHTML = `
           <span style="color: #a0aec0;">${formattedPath}</span>
           ${directory ? `
-          <button onclick="appState.loadFileTree('')" 
+          <button onclick="appState.loadFileTree('')"
                   class="ml-2 text-xs bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded transition">
             Go to root
           </button>
           ` : ''}
-          <button onclick="appState.copyCurrentPath()" 
+          <button onclick="appState.copyCurrentPath()"
                   class="ml-2 text-xs bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded transition">
             <i class="fas fa-copy mr-1"></i> Copy Path
           </button>
@@ -901,12 +892,12 @@
 
         const parts = this.currentDirectory.split('/');
         let breadcrumbHtml = '<li class="breadcrumbs mb-2 pb-2 border-b border-gray-700">';
-        
+
         parts.reduce((acc, part) => {
           const path = acc ? `${acc}/${part}` : part;
           breadcrumbHtml += `
             <span class="text-gray-400">/</span>
-            <button onclick="appState.loadFileTree('${path}')" 
+            <button onclick="appState.loadFileTree('${path}')"
                     class="text-yellow-400 hover:text-yellow-300">
               ${part}
             </button>
@@ -932,9 +923,9 @@
 
       getFileItemHTML(file) {
         const filePath = this.currentDirectory ? `${this.currentDirectory}/${file.name}` : file.name;
-        
+
         return `
-          <li class="flex items-center justify-between py-2 px-3 hover:bg-gray-700 rounded cursor-pointer ${file.isDirectory ? 'folder' : 'file'}" 
+          <li class="flex items-center justify-between py-2 px-3 hover:bg-gray-700 rounded cursor-pointer ${file.isDirectory ? 'folder' : 'file'}"
               data-path="${filePath}"
               data-name="${file.name}"
               data-type="${file.isDirectory ? 'folder' : 'file'}"
@@ -946,13 +937,13 @@
             <div class="flex items-center">
               ${!file.isDirectory ? `
                 <span class="text-xs text-gray-400 mr-2">${this.formatFileSize(file.size)}</span>
-                <button onclick="event.stopPropagation(); appState.openFileForEditing('${filePath}')" 
+                <button onclick="event.stopPropagation(); appState.openFileForEditing('${filePath}')"
                         class="file-actions text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded mr-2">
                   <i class="fas fa-edit mr-1"></i> Edit
                 </button>
               ` : ''}
-              ${file.isDirectory ? 
-                `<button onclick="event.stopPropagation(); appState.loadFileTree('${filePath}')" 
+              ${file.isDirectory ?
+                `<button onclick="event.stopPropagation(); appState.loadFileTree('${filePath}')"
                         class="file-actions text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded">
                   <i class="fas fa-folder-open mr-1"></i> Open
                 </button>` : ''}
@@ -964,11 +955,18 @@
       setupFileEventListeners() {
         document.querySelectorAll('#file-tree li.folder').forEach(item => {
           item.addEventListener('click', (e) => {
-            if (!e.target.classList.contains('file-actions') && 
-                !e.target.classList.contains('fa-edit') && 
-                !e.target.classList.contains('fa-folder-open')) {
+            if (!e.target.closest('.file-actions')) {
               const path = item.getAttribute('data-path');
               this.loadFileTree(path);
+            }
+          });
+        });
+
+        document.querySelectorAll('#file-tree li.file').forEach(item => {
+          item.addEventListener('click', (e) => {
+            if (!e.target.closest('.file-actions')) {
+              const path = item.getAttribute('data-path');
+              this.openFileForEditing(path);
             }
           });
         });
@@ -978,7 +976,7 @@
         document.getElementById('file-tree').innerHTML = `
           <li class="text-red-400 py-2">
             ${message}
-            <button onclick="appState.loadFileTree('')" 
+            <button onclick="appState.loadFileTree('')"
                     class="ml-2 text-xs bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded transition">
               <i class="fas fa-home mr-1"></i> Return to root
             </button>
@@ -1009,19 +1007,19 @@
           });
 
           const result = await response.json();
-          
+
           if (response.ok) {
             this.showNotification('File created successfully', 'success');
             this.closeModal('createFileModal');
             this.refreshFileTree();
 
             // Open the file for editing if it's a text file
-            const textFileExtensions = ['.js', '.jsx', '.ts', '.tsx', '.html', '.css', '.json', '.txt'];
-            if (textFileExtensions.some(ext => fileName.endsWith(ext))) {
-              const filePath = this.currentDirectory 
-                ? `${this.currentDirectory}/${fileName}` 
+            const textFileExtensions = ['.js', '.jsx', '.ts', '.tsx', '.html', '.css', '.json', '.txt', '.md', '.vue'];
+            if (textFileExtensions.some(ext => fileName.toLowerCase().endsWith(ext))) {
+              const filePath = this.currentDirectory
+                ? `${this.currentDirectory}/${fileName}`
                 : fileName;
-              this.openFileForEditing(filePath);
+              setTimeout(() => this.openFileForEditing(filePath), 100);
             }
           } else {
             throw new Error(result.error || 'Failed to create file');
@@ -1033,7 +1031,7 @@
 
       async createNewFolder() {
         const folderName = document.getElementById('folderName').value.trim();
-        
+
         if (!folderName) {
           this.showNotification('Please enter a folder name', 'error');
           return;
@@ -1050,7 +1048,7 @@
           });
 
           const result = await response.json();
-          
+
           if (response.ok) {
             this.showNotification('Folder created successfully', 'success');
             this.closeModal('createFolderModal');
@@ -1065,7 +1063,17 @@
 
       async renameFile(path) {
         const newName = prompt('Enter new name:', path.split('/').pop());
-        if (!newName) return;
+        if (!newName || newName.trim() === '') {
+            if (newName !== null) this.showNotification('New name cannot be empty', 'warning');
+            return;
+        }
+
+        const parentDir = path.split('/').slice(0, -1).join('/');
+        const newPath = parentDir ? `${parentDir}/${newName}` : newName;
+
+        if (this.currentFile === path) {
+            this.closeEditor();
+        }
 
         try {
           const response = await fetch('/api/rename', {
@@ -1073,17 +1081,17 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               oldPath: path,
-              newName: newName
+              newPath: newPath
             })
           });
 
           const result = await response.json();
-          
+
           if (response.ok) {
-            this.showNotification('File renamed successfully', 'success');
+            this.showNotification('Item renamed successfully', 'success');
             this.refreshFileTree();
           } else {
-            throw new Error(result.error || 'Failed to rename file');
+            throw new Error(result.error || 'Failed to rename item');
           }
         } catch (error) {
           this.showNotification(`Error: ${error.message}`, 'error');
@@ -1091,7 +1099,37 @@
       }
 
       async deleteFile(path) {
-        if (!confirm(`Are you sure you want to delete ${path}?`)) return;
+        const confirmed = await new Promise((resolve) => {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <h3 class="text-xl font-bold text-yellow-400 mb-4">Confirm Delete</h3>
+                <p class="mb-4">Are you sure you want to delete "${path}"?</p>
+                <div class="flex gap-2">
+                    <button id="confirm-delete-btn" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded font-bold">Delete</button>
+                    <button id="cancel-delete-btn" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded font-bold">Cancel</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            this.openModal(modal.id = 'confirmDeleteModal');
+
+            document.getElementById('confirm-delete-btn').onclick = () => {
+                this.closeModal('confirmDeleteModal');
+                modal.remove();
+                resolve(true);
+            };
+             document.getElementById('cancel-delete-btn').onclick = () => {
+                this.closeModal('confirmDeleteModal');
+                modal.remove();
+                resolve(false);
+            };
+        });
+
+        if (!confirmed) return;
+
+        if (this.currentFile === path) {
+            this.closeEditor();
+        }
 
         try {
           const response = await fetch('/api/delete', {
@@ -1103,12 +1141,12 @@
           });
 
           const result = await response.json();
-          
+
           if (response.ok) {
-            this.showNotification('File deleted successfully', 'success');
+            this.showNotification('Item deleted successfully', 'success');
             this.refreshFileTree();
           } else {
-            throw new Error(result.error || 'Failed to delete file');
+            throw new Error(result.error || 'Failed to delete item');
           }
         } catch (error) {
           this.showNotification(`Error: ${error.message}`, 'error');
@@ -1134,7 +1172,7 @@
 
       initEditor() {
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
-        
+
         require(['vs/editor/editor.main'], () => {
           this.codeEditor = monaco.editor.create(document.getElementById('editor'), {
             value: '',
@@ -1145,7 +1183,7 @@
             fontSize: 14,
             scrollBeyondLastLine: false
           });
-          
+
           this.codeEditor.onDidChangeModelContent(() => {
             document.getElementById('editor-status').textContent = 'Unsaved changes';
             document.getElementById('editor-status').className = 'text-xs ml-2 px-2 py-1 rounded bg-yellow-600';
@@ -1160,18 +1198,18 @@
           if (!response.ok) {
             throw new Error(await response.text() || 'Failed to read file');
           }
-          
+
           const fileContent = await response.text();
           const language = this.getLanguageFromExtension(filePath);
-          
+
           if (this.codeEditor) {
             this.codeEditor.setValue(fileContent);
             monaco.editor.setModelLanguage(this.codeEditor.getModel(), language);
-            
+
             document.getElementById('editor-filename').textContent = filePath;
             document.getElementById('editor-status').classList.add('hidden');
             document.getElementById('editor-container').classList.remove('hidden');
-            
+
             this.currentFile = filePath;
           }
         } catch (error) {
@@ -1194,7 +1232,7 @@
           });
 
           const result = await response.json();
-          
+
           if (response.ok) {
             document.getElementById('editor-status').textContent = 'Saved';
             document.getElementById('editor-status').className = 'text-xs ml-2 px-2 py-1 rounded bg-green-600';
@@ -1215,7 +1253,7 @@
 
       getLanguageFromExtension(filePath) {
         const extension = filePath.split('.').pop().toLowerCase();
-        
+
         switch (extension) {
           case 'js': return 'javascript';
           case 'jsx': return 'javascript';
@@ -1227,6 +1265,7 @@
           case 'json': return 'json';
           case 'md': return 'markdown';
           case 'py': return 'python';
+          case 'vue': return 'vue';
           default: return 'plaintext';
         }
       }
@@ -1268,7 +1307,7 @@
           });
 
           const result = await response.json();
-          
+
           if (response.ok) {
             this.showNotification(`Project created in workspace: ${projectName}`, 'success');
             this.closeModal('createProjectModal');
@@ -1290,7 +1329,7 @@
       async createApp() {
         const appName = document.getElementById('appName').value.trim();
         const template = document.getElementById('appTemplate').value;
-        
+
         if (!appName) {
           this.showNotification('Please enter an app name', 'error');
           return;
@@ -1298,19 +1337,19 @@
 
         try {
           this.showNotification(`Creating app "${appName}"...`, 'info');
-          
+
           const response = await fetch('/api/create-app', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              appName, 
+            body: JSON.stringify({
+              appName,
               template,
               basePath: 'workspace'
             })
           });
-          
+
           const result = await response.json();
-          
+
           if (response.ok) {
             this.showNotification(`App created in workspace: ${appName}`, 'success');
             this.closeModal('createAppModal');
@@ -1354,13 +1393,13 @@
             foreground: '#ffffff'
           }
         });
-        
+
         this.terminalFitAddon = new FitAddon();
         this.terminal.loadAddon(this.terminalFitAddon);
-        
+
         this.terminal.open(document.getElementById('terminal'));
         this.terminalFitAddon.fit();
-        
+
         this.terminal.onData(data => {
           if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             this.ws.send(JSON.stringify({
@@ -1369,7 +1408,7 @@
             }));
           }
         });
-        
+
         window.addEventListener('resize', () => {
           this.terminalFitAddon.fit();
         });
@@ -1378,7 +1417,7 @@
       sendTerminalCommand() {
         const input = document.getElementById('terminal-input');
         const command = input.value.trim();
-        
+
         if (command && this.ws && this.ws.readyState === WebSocket.OPEN) {
           this.ws.send(JSON.stringify({
             type: 'terminal-command',
@@ -1404,27 +1443,36 @@
       }
 
       openModal(id) {
-        document.getElementById('modal-overlay').style.display = 'block';
-        document.getElementById(id).style.display = 'block';
+         const modal = typeof id === 'string' ? document.getElementById(id) : id;
+         if (modal) {
+            document.getElementById('modal-overlay').style.display = 'block';
+            modal.style.display = 'block';
+         }
       }
 
       closeModal(id) {
-        document.getElementById('modal-overlay').style.display = 'none';
-        document.getElementById(id).style.display = 'none';
+         const modal = typeof id === 'string' ? document.getElementById(id) : id;
+         if (modal) {
+            modal.style.display = 'none';
+            const anyModalOpen = Array.from(document.querySelectorAll('.modal')).some(m => m.style.display === 'block');
+            if (!anyModalOpen) {
+                document.getElementById('modal-overlay').style.display = 'none';
+            }
+         }
       }
 
       formatFileSize(bytes) {
         if (typeof bytes !== 'number' || isNaN(bytes)) return '0 B';
         if (!isFinite(bytes)) return '∞ B';
         if (bytes === 0) return '0 B';
-        
+
         const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
         const i = Math.floor(Math.log(bytes) / Math.log(1024));
         const size = bytes / Math.pow(1024, i);
-        
+
         return `${size.toFixed(2)} ${sizes[i]}`;
       }
-      
+
       showNotification(message, type = 'info', duration = 5000) {
         const icons = {
           success: 'fa-check-circle',
@@ -1432,23 +1480,23 @@
           info: 'fa-info-circle',
           warning: 'fa-exclamation-triangle'
         };
-        
+
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
         notification.innerHTML = `
           <span class="notification-icon"><i class="fas ${icons[type] || icons.info}"></i></span>
           <span class="notification-message">${message}</span>
         `;
-        
+
         document.body.appendChild(notification);
-        
+
         setTimeout(() => {
           notification.style.animation = 'fadeOut 0.5s forwards';
           notification.addEventListener('animationend', () => {
             notification.remove();
           });
         }, duration);
-        
+
         notification.addEventListener('click', () => {
           notification.style.animation = 'fadeOut 0.3s forwards';
           notification.addEventListener('animationend', () => {
@@ -1460,19 +1508,32 @@
       handleHmrUpdate(update) {
         this.hmrUpdates.push(update);
         this.showNotification(`File updated: ${update.file}`, 'info');
-        
-        if (this.currentFile && this.currentFile.endsWith(update.file)) {
+
+        const currentFilePathNormalized = this.currentFile ? this.currentFile.replace(/\\/g, '/').replace(/^\//, '') : null;
+        const updatedFilePathNormalized = update.file.replace(/\\/g, '/').replace(/^\//, '');
+
+        if (currentFilePathNormalized && currentFilePathNormalized === updatedFilePathNormalized) {
           this.openFileForEditing(this.currentFile);
         }
       }
 
       handleFileChange(filePath) {
         this.showNotification(`File changed: ${filePath}`, 'info');
-        
-        const dir = filePath.split('/').slice(0, -1).join('/');
-        if (dir === this.currentDirectory || filePath.startsWith(this.currentDirectory)) {
-          this.refreshFileTree();
+
+        const changedDir = filePath.split('/').slice(0, -1).join('/');
+        const currentDirNormalized = this.currentDirectory.replace(/\\/g, '/');
+        const changedDirNormalized = changedDir.replace(/\\/g, '/');
+
+        if (currentDirNormalized === changedDirNormalized || changedDirNormalized.startsWith(currentDirNormalized + '/')) {
+           this.refreshFileTree();
         }
+
+        const currentFilePathNormalized = this.currentFile ? this.currentFile.replace(/\\/g, '/').replace(/^\//, '') : null;
+        const changedFilePathNormalized = filePath.replace(/\\/g, '/').replace(/^\//, '');
+
+         if (currentFilePathNormalized && currentFilePathNormalized === changedFilePathNormalized) {
+           this.openFileForEditing(this.currentFile);
+         }
       }
 
       handleBuildComplete(buildTime) {
@@ -1487,35 +1548,63 @@
       }
 
       updateMetrics(metrics) {
-        // Update memory metrics
-        const memoryPercent = Math.round((metrics.memory.used / metrics.memory.total) * 100);
-        document.getElementById('memory-percent').textContent = `${memoryPercent}%`;
-        document.getElementById('memory-bar').style.width = `${memoryPercent}%`;
-        document.getElementById('memory').textContent = 
-          `${this.formatFileSize(metrics.memory.used)} / ${this.formatFileSize(metrics.memory.total)}`;
-        
-        // Update CPU metrics
-        const cpuPercent = Math.round(metrics.cpu.usage * 100);
-        document.getElementById('cpu-percent').textContent = `${cpuPercent}%`;
-        document.getElementById('cpu-bar').style.width = `${cpuPercent}%`;
-        document.getElementById('cpu-cores').textContent = `Cores: ${metrics.cpu.cores}`;
-        
-        // Update disk metrics
-        const diskPercent = Math.round((metrics.disk.used / metrics.disk.total) * 100);
-        document.getElementById('disk-percent').textContent = `${diskPercent}%`;
-        document.getElementById('disk-bar').style.width = `${diskPercent}%`;
-        document.getElementById('disk-space').textContent = 
-          `${this.formatFileSize(metrics.disk.used)} / ${this.formatFileSize(metrics.disk.total)}`;
-        
-        // Update network metrics
-        document.getElementById('network-up').textContent = `${metrics.network.upload.toFixed(2)} KB/s`;
-        document.getElementById('network-down').textContent = `${metrics.network.download.toFixed(2)} KB/s`;
+        if (!metrics) {
+            console.warn('Received metrics message with no metrics data:', metrics);
+            return;
+        }
+
+        if (metrics.memory && typeof metrics.memory.used === 'number' && typeof metrics.memory.total === 'number') {
+            const memoryPercent = Math.round((metrics.memory.used / metrics.memory.total) * 100);
+            document.getElementById('memory-percent').textContent = `${memoryPercent}%`;
+            document.getElementById('memory-bar').style.width = `${memoryPercent}%`;
+            document.getElementById('memory').textContent =
+              `${this.formatFileSize(metrics.memory.used)} / ${this.formatFileSize(metrics.memory.total)}`;
+        } else {
+             console.warn('Received incomplete memory metrics:', metrics.memory);
+        }
+
+        if (metrics.cpu && typeof metrics.cpu.usage === 'number' && typeof metrics.cpu.cores === 'number') {
+            const cpuPercent = Math.round(metrics.cpu.usage * 100);
+            document.getElementById('cpu-percent').textContent = `${cpuPercent}%`;
+            document.getElementById('cpu-bar').style.width = `${cpuPercent}%`;
+            document.getElementById('cpu-cores').textContent = `Cores: ${metrics.cpu.cores}`;
+        } else {
+             console.warn('Received incomplete CPU metrics:', metrics.cpu);
+        }
+
+        if (metrics.disk && typeof metrics.disk.used === 'number' && typeof metrics.disk.total === 'number') {
+            const diskPercent = Math.round((metrics.disk.used / metrics.disk.total) * 100);
+            document.getElementById('disk-percent').textContent = `${diskPercent}%`;
+            document.getElementById('disk-bar').style.width = `${diskPercent}%`;
+            document.getElementById('disk-space').textContent =
+              `${this.formatFileSize(metrics.disk.used)} / ${this.formatFileSize(metrics.disk.total)}`;
+        } else {
+             console.warn('Received incomplete disk metrics:', metrics.disk);
+        }
+
+        if (metrics.network && typeof metrics.network.upload === 'number' && typeof metrics.network.download === 'number') {
+            document.getElementById('network-up').textContent = `${metrics.network.upload.toFixed(2)} KB/s`;
+            document.getElementById('network-down').textContent = `${metrics.network.download.toFixed(2)} KB/s`;
+        } else {
+             console.warn('Received incomplete network metrics:', metrics.network);
+        }
       }
 
       setupEventListeners() {
+        // File Manager Action Buttons
+        document.getElementById('new-file-button')?.addEventListener('click', () => this.showCreateFileModal());
+        document.getElementById('new-folder-button')?.addEventListener('click', () => this.showCreateFolderModal());
+        document.getElementById('upload-button')?.addEventListener('click', () => this.showUploadModal());
+
+        // Modal Action Buttons
+        document.getElementById('create-file-button')?.addEventListener('click', () => this.createNewFile());
+        document.getElementById('create-folder-button')?.addEventListener('click', () => this.createNewFolder());
+        document.getElementById('start-upload-button')?.addEventListener('click', () => this.startUpload());
+
+        // Upload Drop Zone
         const uploadDropZone = document.querySelector('#uploadModal .border-dashed');
         const fileUpload = document.getElementById('file-upload');
-        
+
         if (uploadDropZone && fileUpload) {
           uploadDropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -1537,6 +1626,7 @@
           });
         }
 
+        // Modal Overlay Close
         const modalOverlay = document.getElementById('modal-overlay');
         if (modalOverlay) {
           modalOverlay.addEventListener('click', () => {
@@ -1547,8 +1637,9 @@
           });
         }
 
+        // Keyboard Shortcuts
         document.addEventListener('keydown', (e) => {
-          if (e.ctrlKey && e.key === 's') {
+          if ((e.ctrlKey || e.metaKey) && e.key === 's') {
             e.preventDefault();
             this.saveCurrentFile();
           }
@@ -1562,18 +1653,17 @@
       showContextMenu(event, targetElement) {
         event.preventDefault();
         this.contextMenuTarget = targetElement;
-        
+
         const contextMenu = document.getElementById('context-menu');
         contextMenu.style.display = 'block';
         contextMenu.style.left = `${event.pageX}px`;
         contextMenu.style.top = `${event.pageY}px`;
-        
-        // Close context menu when clicking elsewhere
+
         const closeMenu = () => {
           contextMenu.style.display = 'none';
           document.removeEventListener('click', closeMenu);
         };
-        
+
         setTimeout(() => {
           document.addEventListener('click', closeMenu);
         }, 100);
@@ -1581,10 +1671,10 @@
 
       contextMenuAction(action) {
         if (!this.contextMenuTarget) return;
-        
+
         const path = this.contextMenuTarget.getAttribute('data-path');
         const type = this.contextMenuTarget.getAttribute('data-type');
-        
+
         switch (action) {
           case 'open':
             if (type === 'folder') {
@@ -1600,17 +1690,22 @@
             this.deleteFile(path);
             break;
           case 'download':
-            this.downloadFile(path);
+            if (type === 'file') {
+               this.downloadFile(path);
+            } else {
+               this.showNotification('Cannot download folders', 'warning');
+            }
             break;
           case 'copy-path':
             this.copyToClipboard(path);
             break;
         }
+        document.getElementById('context-menu').style.display = 'none';
       }
 
       async startUpload() {
-        const files = document.getElementById('file-upload').files;
-        if (files.length === 0) {
+        const fileInput = document.getElementById('file-upload');
+        if (!fileInput?.files?.length) {
           this.showNotification('Please select files to upload', 'error');
           return;
         }
@@ -1618,39 +1713,75 @@
         const progress = document.getElementById('upload-progress');
         const progressBar = document.getElementById('upload-progress-bar');
         const status = document.getElementById('upload-status');
-        const uploadButton = document.getElementById('upload-button');
+        const uploadButton = document.getElementById('start-upload-button');
 
         progress.classList.remove('hidden');
         uploadButton.disabled = true;
+        status.textContent = 'Starting upload...';
+        progressBar.style.width = '0%';
 
         const formData = new FormData();
-        for (let i = 0; i < files.length; i++) {
-          formData.append('files', files[i]);
+        for (let i = 0; i < fileInput.files.length; i++) {
+          formData.append('files', fileInput.files[i]);
         }
         
-        // Include target directory
         formData.append('directory', this.currentDirectory || 'workspace');
 
         try {
-          const response = await fetch('/api/upload', {
-            method: 'POST',
-            body: formData
-          });
+          const xhr = new XMLHttpRequest();
 
-          if (!response.ok) {
-            throw new Error(await response.text());
-          }
+          xhr.open('POST', '/api/upload', true);
 
-          const result = await response.json();
-          this.showNotification(`${result.files.length} files uploaded successfully`, 'success');
-          this.closeModal('uploadModal');
-          this.refreshFileTree();
+          xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+              const percentComplete = (event.loaded / event.total) * 100;
+              progressBar.style.width = `${percentComplete}%`;
+              status.textContent = `Uploading: ${percentComplete.toFixed(0)}%`;
+            }
+          };
+
+          xhr.onload = () => {
+            uploadButton.disabled = false;
+            progress.classList.add('hidden');
+
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                const result = JSON.parse(xhr.responseText);
+                this.showNotification(`${result.files.length} files uploaded successfully`, 'success');
+                this.closeModal('uploadModal');
+                this.refreshFileTree();
+              } catch (e) {
+                 console.error('Upload success, but failed to parse response:', e);
+                 this.showNotification('Upload successful, but response error', 'warning');
+                 this.closeModal('uploadModal');
+                 this.refreshFileTree();
+              }
+            } else {
+              let errorMessage = 'Upload failed';
+              try {
+                 const errorResult = JSON.parse(xhr.responseText);
+                 errorMessage = errorResult.error || errorMessage;
+              } catch (e) {
+              }
+              console.error('Upload error:', xhr.status, xhr.responseText);
+              this.showNotification(`Upload failed: ${errorMessage}`, 'error');
+            }
+          };
+
+          xhr.onerror = () => {
+             uploadButton.disabled = false;
+             progress.classList.add('hidden');
+             console.error('Upload network error');
+             this.showNotification('Upload failed: Network error', 'error');
+          };
+
+          xhr.send(formData);
+
         } catch (error) {
-          console.error('Upload error:', error);
+          console.error('Upload initiation error:', error);
           this.showNotification(`Upload failed: ${error.message}`, 'error');
-        } finally {
-          progress.classList.add('hidden');
           uploadButton.disabled = false;
+          progress.classList.add('hidden');
         }
       }
     }
@@ -1673,7 +1804,7 @@
       try {
         const appState = new AppState();
         appState.init();
-        
+
         // Add reconnect button to connection status
         const statusElement = document.getElementById('connection-status');
         if (statusElement) {

@@ -59,60 +59,86 @@ app.get('/api/files', async (req, res) => {
   }
 });
 
-app.post('/api/create-file', async (req, res) => {
-  try {
-    const { path: filePath, name, content = '' } = req.body;
-    const fullPath = path.join(WORKSPACE_PATH, filePath, name);
-    
-    await fs.mkdir(path.dirname(fullPath), { recursive: true });
-    await fs.writeFile(fullPath, content);
-    
-    res.json({ success: true, path: fullPath });
-  } catch (error) {
-    console.error('Error creating file:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
 
-app.post('/api/create-folder', async (req, res) => {
-  try {
-    const { path: folderPath, name } = req.body;
-    const fullPath = path.join(WORKSPACE_PATH, folderPath, name);
-    
-    await fs.mkdir(fullPath, { recursive: true });
-    res.json({ success: true, path: fullPath });
-  } catch (error) {
-    console.error('Error creating folder:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
+    // --- API Route: POST /api/create-file ---
+    // Handles requests from the browser's createNewFile() function.
+    // Expects JSON body: { path: string, name: string, template?: string, content?: string }
+    app.post('/api/create-file', async (req, res) => {
+      try {
+        // Extract data sent from the browser
+        const { path: targetDir, name: fileName, template, content } = req.body;
 
-app.post('/api/upload', async (req, res) => {
-  if (!req.files || !req.files.files) {
-    return res.status(400).json({ error: 'No files uploaded' });
-  }
+        if (!targetDir || !fileName) {
+          return res.status(400).json({ success: false, error: 'Missing path or name in request body' });
+        }
 
-  try {
-    const uploadPath = req.body.directory || '';
-    const fullPath = path.join(WORKSPACE_PATH, uploadPath);
-    
-    await fs.mkdir(fullPath, { recursive: true });
-    
-    const files = Array.isArray(req.files.files) ? req.files.files : [req.files.files];
-    const uploadedFiles = [];
-    
-    for (const file of files) {
-      const filePath = path.join(fullPath, file.name);
-      await fs.writeFile(filePath, file.data);
-      uploadedFiles.push(file.name);
-    }
-    
-    res.json({ success: true, files: uploadedFiles });
-  } catch (error) {
-    console.error('Upload error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
+        // Calculate the full absolute path where the file should be created
+        const absoluteTargetDir = getAbsolutePath(targetDir);
+        const absoluteFilePath = path.join(absoluteTargetDir, fileName);
+
+        // Call your createFile function with the calculated absolute path and options
+        const result = await createFile(absoluteFilePath, { template, content });
+
+        // Send a success response back to the browser
+        res.json({ success: true, message: 'File created', path: targetDir, name: fileName, result });
+
+      } catch (error) {
+        console.error('Server Error creating file:', error);
+        // Send an error response back to the browser
+        res.status(500).json({ success: false, error: error.message || 'Failed to create file' });
+      }
+    });
+
+    // --- API Route: POST /api/create-folder ---
+    // Handles requests from the browser's createNewFolder() function.
+    // Expects JSON body: { path: string, name: string }
+    app.post('/api/create-folder', async (req, res) => {
+      try {
+        // Extract data sent from the browser
+        const { path: targetDir, name: folderName } = req.body;
+
+        if (!targetDir || !folderName) {
+          return res.status(400).json({ success: false, error: 'Missing path or name in request body' });
+        }
+
+        // Calculate the full absolute path where the folder should be created
+        const absoluteTargetDir = getAbsolutePath(targetDir);
+        const absoluteFolderPath = path.join(absoluteTargetDir, folderName);
+
+        // Call your createFolder function with the calculated absolute path
+        // Note: Your createFolder.cjs uses ensureDir, which handles recursion by default.
+        const result = await createFolder(absoluteFolderPath);
+
+        // Send a success response back to the browser
+        res.json({ success: true, message: 'Folder created', path: targetDir, name: folderName, result });
+
+      } catch (error) {
+        console.error('Server Error creating folder:', error);
+        // Send an error response back to the browser
+        res.status(500).json({ success: false, error: error.message || 'Failed to create folder' });
+      }
+    });
+
+    // --- API Route: POST /api/upload ---
+    // Handles requests from the browser's startUpload() function.
+    // Expects FormData with 'files' and 'directory'.
+    // Use the multer middleware from upload.cjs to handle the incoming files.
+    app.post('/api/upload', uploadModule.handleUpload, async (req, res) => {
+       // After uploadModule.handleUpload runs, req.files will contain file info
+       // and req.body will contain other form fields like 'directory'.
+       try {
+           // Call the processUpload function from upload.cjs
+           // This function is designed to use req.files and req.body.directory
+           await uploadModule.processUpload(req, res);
+           // Note: processUpload sends the response itself, so no need for res.json() here
+       } catch (error) {
+           console.error('Server Error processing upload:', error);
+           // If processUpload didn't already send a response, send one now
+           if (!res.headersSent) {
+               res.status(500).json({ success: false, error: error.message || 'Failed to process upload' });
+           }
+       }
+    });
 
 // Create HTTP server
 const server = app.listen(PORT, () => {
@@ -347,6 +373,7 @@ if (process.env.NODE_ENV === 'development') {
     });
   });
 }
+
 
 // Error handling
 process.on('uncaughtException', (error) => {
