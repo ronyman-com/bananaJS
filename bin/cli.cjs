@@ -401,46 +401,55 @@ program
 );
 
 // ========================
-// COMMAND: CREATE APP
-// ========================
-program
-.command('create-app <app-name>')
-.description('Create a new application')
-.option('-t, --template <template>', 'Template to use (react|vue|docs|firebase)', 'react')
-.option('--git', 'Initialize git repository', false)
-.option('--yarn', 'Use yarn instead of npm', false)
-.action(async (appName, options) => {
-  showBanner();
-  
-  try {
-    // Create workspace directory if it doesn't exist
-    const workspaceDir = path.join(process.cwd(), 'workspace');
-    await fs.ensureDir(workspaceDir);
+    // COMMAND: CREATE APP
+    // ========================
+    program
+    .command('create-app <app-name>')
+    .description('Create a new application')
+    .option('-t, --template <template>', 'Template to use (react|vue|docs|firebase)', 'react')
+    .option('--git', 'Initialize git repository', false)
+    .option('--yarn', 'Use yarn instead of npm', false)
+    .action(async (appName, options) => {
+      showBanner();
 
-    const result = await createApp(appName, options.template, {
-      git: options.git,
-      packageManager: options.yarn ? 'yarn' : 'npm',
-      parentPath: workspaceDir // Pass workspace as parent directory
+      try {
+        // Create workspace directory if it doesn't exist
+        const workspaceDir = path.join(process.cwd(), 'workspace');
+        await fs.ensureDir(workspaceDir);
+
+        const result = await createApp(appName, options.template, {
+          git: options.git,
+          packageManager: options.yarn ? 'yarn' : 'npm',
+          parentPath: workspaceDir // Pass workspace as parent directory
+        });
+
+        // Calculate the path of the created app relative to the current working directory (process.cwd()).
+        // Since the app is created inside 'workspace', this relative path will automatically include 'workspace/'.
+        // Example: if process.cwd() is /home/user/project and result.appDir is /home/user/project/workspace/my-app,
+        // relativePath will be 'workspace/my-app'.
+        const relativePath = path.relative(process.cwd(), result.appDir);
+
+        // Show the relative path in the success message.
+        // We use relativePath directly as it already contains the 'workspace/' prefix.
+        console.log(styles.success(`\n✔ Success! Created: ${relativePath || `workspace/${appName}`}`));
+
+        console.log(
+          boxen(
+            styles.highlight('Next steps:') +
+            // Use relativePath directly for the cd command as it's the path relative to the current directory.
+            `\n\n${styles.command(`cd ${relativePath || `workspace/${appName}`}`)}\n` +
+            `${styles.command(`${options.yarn ? 'yarn' : 'npm'} install`)}\n` +
+            `${styles.command(`${options.yarn ? 'yarn' : 'npm'} run dev`)}`,
+            { padding: 1, borderColor: 'green' }
+          )
+        );
+      } catch (err) {
+        console.error(styles.error('\n✖ Creation failed:'), err.message);
+        process.exit(1);
+      }
     });
 
-    // Show relative path in success message
-    const relativePath = path.relative(process.cwd(), result.appDir);
-    console.log(styles.success(`\n✔ Success! Created: workspace/${relativePath || `${appName}`}`));
-    
-    console.log(
-      boxen(
-        styles.highlight('Next steps:') +
-        `\n\n${styles.command(`cd workspace/${relativePath || `${appName}`}`)}\n` +
-        `${styles.command(`${options.yarn ? 'yarn' : 'npm'} install`)}\n` +
-        `${styles.command(`${options.yarn ? 'yarn' : 'npm'} run dev`)}`,
-        { padding: 1, borderColor: 'green' }
-      )
-    );
-  } catch (err) {
-    console.error(styles.error('\n✖ Creation failed:'), err.message);
-    process.exit(1);
-  }
-});
+
     // ========================
     // COMMAND: DEV
     // ========================

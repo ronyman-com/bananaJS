@@ -242,43 +242,41 @@ app.get('/api/files', async (req, res) => {
 
 const createProject = require('../lib/create-project.cjs');
 
-app.post('/api/create-project', express.json(), async (req, res) => {
+// API endpoint to create a project
+app.post('/api/create-project', async (req, res) => {
     try {
-      const { 
-        name: projectName, 
-        git = false, 
-        packageManager = 'npm' 
-      } = req.body;
-  
-      // Define workspace directory
-      const workspaceDir = path.join(process.cwd(), 'workspace');
-      
-      // Ensure workspace directory exists
-      await fs.mkdir(workspaceDir, { recursive: true });
-  
-      // Call createProject with the workspace directory as base
-      const result = await createProject(projectName, {
-        git,
-        packageManager,
-        parentPath: workspaceDir // Assuming createProject accepts this option
+      // Extract data from the request body, including basePath
+      const { name, git, packageManager, template, basePath } = req.body;
+
+      // Determine the actual parent directory based on the provided basePath
+      let parentPath = process.cwd(); // Default to current working directory
+      if (basePath) {
+        // Join the current working directory with the basePath (e.g., 'workspace')
+        parentPath = path.join(process.cwd(), basePath);
+        // Ensure the parent directory (like 'workspace') exists before creating the project inside it
+        await fs.ensureDir(parentPath);
+      }
+      // Add logic for other basePaths if needed
+
+      // Call the createProject function, passing the calculated parentPath in options
+      const result = await createProject(name, {
+        git: git,
+        packageManager: packageManager,
+        template: template, // Assuming createProject supports a template option
+        parentPath: parentPath // Pass the determined parent directory here
       });
-  
+
+      // Send a success response
       res.json({
         success: true,
-        projectDir: path.relative(process.cwd(), result.projectDir),
-        projectName: result.projectName,
-        packageManager: result.packageManager
+        message: `Project '${name}' created successfully in ${basePath || 'workspace'}`,
+        projectDir: result.projectDir // Return the actual created directory path
       });
-  
+
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        error: error.message,
-        ...(process.env.NODE_ENV === 'development' && {
-          stack: error.stack,
-          receivedBody: req.body
-        })
-      });
+      console.error('API Error creating project:', error);
+      // Send an error response
+      res.status(500).json({ error: error.message || 'An unexpected error occurred during project creation.' });
     }
   });
 
@@ -455,6 +453,52 @@ app.get('*', (req, res) => {
             <p>The main application file (index.html) is missing from the public directory (${publicDir}).</p>
         `);
     }
+});
+
+//----
+
+const { spawn } = require('node-pty');
+
+// Add to your WebSocket server setup
+wss.on('connection', (ws) => {
+  console.log('New terminal connection');
+  
+  const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
+  const ptyProcess = spawn(shell, [], {
+    name: 'xterm-256color',
+    cols: 80,
+    rows: 24,
+    cwd: process.cwd(),
+    env: process.env
+  });
+
+  // Handle terminal data
+  ptyProcess.on('data', (data) => {
+    try {
+      ws.send(data);
+    } catch (e) {
+      // Client disconnected
+    }
+  });
+
+  // Handle WebSocket messages
+  ws.on('message', (message) => {
+    try {
+      const msg = typeof message === 'string' ? JSON.parse(message) : message;
+      
+      if (msg.type === 'resize') {
+        ptyProcess.resize(msg.cols, msg.rows);
+      } else {
+        ptyProcess.write(message.toString());
+      }
+    } catch (e) {
+      console.error('Error handling terminal message:', e);
+    }
+  });
+
+  ws.on('close', () => {
+    ptyProcess.kill();
+  });
 });
 
 // --- WebSocket Handling ---
