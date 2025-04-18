@@ -200,6 +200,26 @@
         height: 300px;
       }
     }
+
+    .context-menu {
+  position: fixed;
+  background: #2d3748;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  z-index: 1001;
+  display: none;
+  min-width: 150px;
+}
+
+.context-menu-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  color: white;
+}
+
+.context-menu-item:hover {
+  background: #4a5568;
+}
   </style>
 </head>
 <body class="bg-gray-900 text-white">
@@ -1269,6 +1289,83 @@
           default: return 'plaintext';
         }
       }
+// In your AppState class, update the showContextMenu method:
+showContextMenu(event, targetElement) {
+  event.preventDefault();
+  this.contextMenuTarget = targetElement;
+
+  const contextMenu = document.getElementById('context-menu');
+  contextMenu.style.display = 'block';
+  
+  // Position the context menu near the cursor
+  const x = Math.min(event.pageX, window.innerWidth - contextMenu.offsetWidth - 5);
+  const y = Math.min(event.pageY, window.innerHeight - contextMenu.offsetHeight - 5);
+  
+  contextMenu.style.left = `${x}px`;
+  contextMenu.style.top = `${y}px`;
+
+  // Add event listener for context menu items
+  contextMenu.addEventListener('click', this.handleContextMenuClick.bind(this));
+  
+  // Close context menu when clicking elsewhere
+  const closeMenu = () => {
+    contextMenu.style.display = 'none';
+    contextMenu.removeEventListener('click', this.handleContextMenuClick.bind(this));
+    document.removeEventListener('click', closeMenu);
+  };
+
+  // Add the listener after a small delay
+  setTimeout(() => {
+    document.addEventListener('click', closeMenu);
+  }, 100);
+}
+
+// Add this new method to handle context menu clicks
+handleContextMenuClick(event) {
+  event.stopPropagation();
+  const action = event.target.getAttribute('data-action');
+  if (action) {
+    this.contextMenuAction(action);
+  }
+}
+
+// Update the contextMenuAction method to ensure it works:
+contextMenuAction(action) {
+  if (!this.contextMenuTarget) return;
+
+  const path = this.contextMenuTarget.getAttribute('data-path');
+  const type = this.contextMenuTarget.getAttribute('data-type');
+
+  // Hide the context menu immediately
+  document.getElementById('context-menu').style.display = 'none';
+
+  switch (action) {
+    case 'open':
+      if (type === 'folder') {
+        this.loadFileTree(path);
+      } else {
+        this.openFileForEditing(path);
+      }
+      break;
+    case 'rename':
+      this.renameFile(path);
+      break;
+    case 'delete':
+      this.deleteFile(path);
+      break;
+    case 'download':
+      if (type === 'file') {
+        this.downloadFile(path);
+      } else {
+        this.showNotification('Cannot download folders', 'warning');
+      }
+      break;
+    case 'copy-path':
+      this.copyToClipboard(path);
+      break;
+  }
+}
+
 
       openCreateProjectModal() {
         document.getElementById('projectName').value = '';

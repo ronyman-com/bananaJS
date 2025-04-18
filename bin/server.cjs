@@ -242,41 +242,43 @@ app.get('/api/files', async (req, res) => {
 
 const createProject = require('../lib/create-project.cjs');
 
-// API endpoint to create a project
-app.post('/api/create-project', async (req, res) => {
+app.post('/api/create-project', express.json(), async (req, res) => {
     try {
-      // Extract data from the request body, including basePath
-      const { name, git, packageManager, template, basePath } = req.body;
-
-      // Determine the actual parent directory based on the provided basePath
-      let parentPath = process.cwd(); // Default to current working directory
-      if (basePath) {
-        // Join the current working directory with the basePath (e.g., 'workspace')
-        parentPath = path.join(process.cwd(), basePath);
-        // Ensure the parent directory (like 'workspace') exists before creating the project inside it
-        await fs.ensureDir(parentPath);
-      }
-      // Add logic for other basePaths if needed
-
-      // Call the createProject function, passing the calculated parentPath in options
-      const result = await createProject(name, {
-        git: git,
-        packageManager: packageManager,
-        template: template, // Assuming createProject supports a template option
-        parentPath: parentPath // Pass the determined parent directory here
+      const { 
+        name: projectName, 
+        git = false, 
+        packageManager = 'npm' 
+      } = req.body;
+  
+      // Define workspace directory
+      const workspaceDir = path.join(process.cwd(), 'workspace');
+      
+      // Ensure workspace directory exists
+      await fs.mkdir(workspaceDir, { recursive: true });
+  
+      // Call createProject with the workspace directory as base
+      const result = await createProject(projectName, {
+        git,
+        packageManager,
+        parentPath: workspaceDir // Assuming createProject accepts this option
       });
-
-      // Send a success response
+  
       res.json({
         success: true,
-        message: `Project '${name}' created successfully in ${basePath || 'workspace'}`,
-        projectDir: result.projectDir // Return the actual created directory path
+        projectDir: path.relative(process.cwd(), result.projectDir),
+        projectName: result.projectName,
+        packageManager: result.packageManager
       });
-
+  
     } catch (error) {
-      console.error('API Error creating project:', error);
-      // Send an error response
-      res.status(500).json({ error: error.message || 'An unexpected error occurred during project creation.' });
+      res.status(400).json({
+        success: false,
+        error: error.message,
+        ...(process.env.NODE_ENV === 'development' && {
+          stack: error.stack,
+          receivedBody: req.body
+        })
+      });
     }
   });
 
