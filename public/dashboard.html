@@ -222,6 +222,7 @@
 }
   </style>
 </head>
+<div id="api-status" class="fixed bottom-4 right-4 bg-white bg-opacity-90 p-2 rounded shadow-lg text-sm"></div>
 <body class="bg-gray-900 text-white">
   <div class="flex h-screen">
     <!-- Sidebar Navigation -->
@@ -544,15 +545,14 @@
     </div>
   </div>
 
-  <!-- Context Menu -->
-  <div id="context-menu" class="context-menu">
-    <div class="context-menu-item" onclick="appState.contextMenuAction('open')">Open</div>
-    <div class="context-menu-item" onclick="appState.contextMenuAction('rename')">Rename</div>
-    <div class="context-menu-item" onclick="appState.contextMenuAction('delete')">Delete</div>
-    <div class="context-menu-item" onclick="appState.contextMenuAction('download')">Download</div>
-    <div class="context-menu-item" onclick="appState.contextMenuAction('copy-path')">Copy Path</div>
-  </div>
-
+  <!-- Context Menu HTML - Place this in your body -->
+<div id="context-menu" class="context-menu" style="display: none; position: absolute;">
+  <div class="context-menu-item" onclick="window.appState?.contextMenuAction('open')">Open</div>
+  <div class="context-menu-item" onclick="window.appState?.contextMenuAction('rename')">Rename</div>
+  <div class="context-menu-item" onclick="window.appState?.contextMenuAction('delete')">Delete</div>
+  <div class="context-menu-item" onclick="window.appState?.contextMenuAction('download')">Download</div>
+  <div class="context-menu-item" onclick="window.appState?.contextMenuAction('copy-path')">Copy Path</div>
+</div>
   <script>
     // Import the FitAddon for terminal resizing
     const { FitAddon } = window;
@@ -574,6 +574,9 @@
         this.connectionTimeout = null;
         this.heartbeatInterval = null;
         this.connectionCheckInterval = null;
+        this.apiAvailable = false;
+        this.apiCheckInterval = null;
+        this.apiBaseUrl = window.location.origin; // Auto-detect
       }
 
       init() {
@@ -588,6 +591,140 @@
         window.appState = this;
       }
 
+
+
+      ///  API checking
+  async checkAPI() {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/api/health`, {
+        method: 'HEAD',
+        timeout: 3000
+      });
+      this.apiAvailable = response.ok;
+    } catch {
+      this.apiAvailable = false;
+    }
+    return this.apiAvailable;
+  }
+
+  startAPIMonitoring() {
+    this.apiCheckInterval = setInterval(async () => {
+      await this.checkAPI();
+      this.updateAPIStatusUI();
+    }, 15000);
+  }
+
+  updateAPIStatusUI() {
+    const statusElement = document.getElementById('api-status');
+    if (!statusElement) return;
+    
+    if (this.apiAvailable) {
+      statusElement.innerHTML = `
+        <i class="fas fa-check-circle text-green-500"></i>
+        <span>API Connected</span>
+      `;
+    } else {
+      statusElement.innerHTML = `
+        <i class="fas fa-times-circle text-red-500"></i>
+        <span>API Disconnected</span>
+        <button onclick="appState.retryAPIConnection()" 
+                class="ml-2 px-2 py-1 bg-blue-500 text-white rounded text-sm">
+          Retry
+        </button>
+      `;
+    }
+  }
+
+  async retryAPIConnection() {
+    this.showNotification('Attempting to reconnect to API...', 'info');
+    await this.checkAPI();
+    if (this.apiAvailable) {
+      this.loadFileTree();
+      this.showNotification('API reconnected!', 'success');
+    } else {
+      this.showNotification('Still unable to connect', 'error');
+    }
+  }
+
+  async safeAPICall(endpoint, options = {}) {
+  if (!this.apiAvailable) {
+    throw new Error('API is currently unavailable');
+  }
+
+  try {
+    const response = await fetch(`${this.apiBaseUrl}${endpoint}`, {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+      },
+      ...options
+    });
+
+    if (!response.ok) {
+      const error = await response.text().catch(() => 'API request failed');
+      throw new Error(error);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error(`API call to ${endpoint} failed:`, error);
+    this.apiAvailable = false;
+    this.updateAPIStatusUI();
+    throw error;
+  }
+}
+
+// Example usage in your methods:
+async loadFileTree(directory = 'workspace') {
+  try {
+    const data = await this.safeAPICall(`/api/files?directory=${encodeURIComponent(directory)}`);
+    this.renderFileTree(data.files || data);
+  } catch (error) {
+    this.showErrorState(`File browser unavailable: ${error.message}`);
+  }
+}
+
+async renameFile(oldPath, newPath) {
+  try {
+    await this.safeAPICall('/api/rename', {
+      method: 'POST',
+      body: JSON.stringify({ oldPath, newPath })
+    });
+    this.showNotification('File renamed successfully', 'success');
+    this.loadFileTree(this.currentDirectory);
+  } catch (error) {
+    this.showNotification(`Rename failed: ${error.message}`, 'error');
+  }
+}
+
+
+showErrorState(message) {
+  const fileTree = document.getElementById('file-tree');
+  fileTree.innerHTML = `
+    <div class="p-4 text-center">
+      <div class="text-red-500 mb-4">
+        <i class="fas fa-unlink text-4xl"></i>
+        <p class="mt-2">${message}</p>
+      </div>
+      <div class="grid grid-cols-2 gap-4 mt-6">
+        <button onclick="appState.retryAPIConnection()"
+                class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
+          <i class="fas fa-sync-alt mr-2"></i> Retry Connection
+        </button>
+        <button onclick="appState.showHelp('api-connection')"
+                class="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded">
+          <i class="fas fa-question-circle mr-2"></i> Get Help
+        </button>
+      </div>
+      <div class="mt-4 text-xs text-gray-400">
+        Last attempt: ${new Date().toLocaleTimeString()}
+      </div>
+    </div>
+  `;
+}
+
+/////
       showDashboard() {
         document.getElementById('dashboard-section').classList.remove('hidden');
         document.getElementById('file-manager-section').classList.add('hidden');
@@ -704,6 +841,9 @@
           this.handleConnectionFailure('Initialization failed');
         }
       }
+
+
+
 
       processWebSocketMessage(message) {
         switch (message.type) {
@@ -834,49 +974,63 @@
         }
       }
 
-      async loadFileTree(directory = '') {
+      async loadFileTree(directory = 'workspace') {  // Default to workspace
         try {
+          // Ensure directory starts with workspace
+          if (!directory.startsWith('workspace')) {
+            directory = `workspace/${directory}`.replace(/\/+/g, '/');
+          }
+          
           this.currentDirectory = directory;
           this.updatePathDisplay(directory);
 
-          const response = await fetch(`/api/files?directory=${encodeURIComponent(directory)}`);
+          const response = await fetch(`/api/files?directory=${encodeURIComponent(directory)}`, {
+            credentials: 'include'
+          });
 
           if (!response.ok) {
-            throw new Error(await response.text() || 'Failed to load directory');
+            const error = await response.text();
+            throw new Error(error || 'Failed to load directory');
           }
 
-          const files = await response.json();
-          this.renderFileTree(files);
+          const data = await response.json();
+          let files = Array.isArray(data) ? data : (data.files || []);
+          
+          // Filter to only show workspace contents if at root
+          if (directory === 'workspace') {
+            files = files.filter(file => file.name !== '..');
+          }
 
+          this.renderFileTree(files);
+          
         } catch (error) {
           console.error('File tree error:', error);
-          this.showNotification(`Failed to load directory: ${error.message}`, 'error');
-          this.showErrorState(error.message);
+          this.showNotification(`Failed to load: ${error.message}`, 'error');
+          
+          // Fallback to workspace if error occurs
+          if (directory !== 'workspace') {
+            this.loadFileTree('workspace');
+          } else {
+            this.showErrorState(error.message);
+          }
         }
       }
 
-      updatePathDisplay(directory) {
-        const pathDisplay = document.getElementById('current-path');
-        if (!pathDisplay) return;
+updatePathDisplay(directory) {
+  const pathDisplay = document.getElementById('current-path');
+  if (!pathDisplay) return;
 
-        const formattedPath = directory
-          ? `Current path: /${directory.replace(/\\/g, '/')}`
-          : 'Current path: /';
-
-        pathDisplay.innerHTML = `
-          <span style="color: #a0aec0;">${formattedPath}</span>
-          ${directory ? `
-          <button onclick="appState.loadFileTree('')"
-                  class="ml-2 text-xs bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded transition">
-            Go to root
-          </button>
-          ` : ''}
-          <button onclick="appState.copyCurrentPath()"
-                  class="ml-2 text-xs bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded transition">
-            <i class="fas fa-copy mr-1"></i> Copy Path
-          </button>
-        `;
-      }
+  // Remove 'workspace/' prefix for display
+  const displayPath = directory.replace(/^workspace\/?/, '') || '/';
+  
+  pathDisplay.innerHTML = `
+    <span class="text-gray-400">Workspace: /${displayPath}</span>
+    <button onclick="appState.loadFileTree('workspace')"
+            class="ml-2 text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded">
+      Root
+    </button>
+  `;
+}
 
       renderFileTree(files) {
         const fileTree = document.getElementById('file-tree');
@@ -908,25 +1062,27 @@
       }
 
       getBreadcrumbs() {
-        if (!this.currentDirectory) return '';
+  if (!this.currentDirectory.startsWith('workspace')) return '';
+  
+  const parts = this.currentDirectory.replace(/^workspace\/?/, '').split('/');
+  let breadcrumbHtml = '<li class="breadcrumbs mb-2 pb-2 border-b border-gray-700">';
+  breadcrumbHtml += '<span class="text-gray-400">Workspace/</span>';
 
-        const parts = this.currentDirectory.split('/');
-        let breadcrumbHtml = '<li class="breadcrumbs mb-2 pb-2 border-b border-gray-700">';
+  parts.reduce((acc, part) => {
+    if (!part) return acc;
+    const path = acc ? `${acc}/${part}` : part;
+    breadcrumbHtml += `
+      <button onclick="appState.loadFileTree('workspace/${path}')"
+              class="text-yellow-400 hover:text-yellow-300">
+        ${part}
+      </button>
+      <span class="text-gray-400">/</span>
+    `;
+    return path;
+  }, '');
 
-        parts.reduce((acc, part) => {
-          const path = acc ? `${acc}/${part}` : part;
-          breadcrumbHtml += `
-            <span class="text-gray-400">/</span>
-            <button onclick="appState.loadFileTree('${path}')"
-                    class="text-yellow-400 hover:text-yellow-300">
-              ${part}
-            </button>
-          `;
-          return path;
-        }, '');
-
-        return breadcrumbHtml + '</li>';
-      }
+  return breadcrumbHtml + '</li>';
+}
 
       getFileListHTML(files) {
         return files
@@ -1933,5 +2089,95 @@ contextMenuAction(action) {
       }
     });
   </script>
+
+<script>
+
+// Add these methods to your AppState class
+class AppState {
+  // ... your existing code ...
+
+  showContextMenu(event, targetElement) {
+    event.preventDefault();
+    this.contextMenuTarget = targetElement;
+    
+    const menu = document.getElementById('context-menu');
+    menu.style.display = 'block';
+    
+    // Position menu at cursor (with boundary checks)
+    menu.style.left = `${Math.min(event.clientX, window.innerWidth - menu.offsetWidth - 10)}px`;
+    menu.style.top = `${Math.min(event.clientY, window.innerHeight - menu.offsetHeight - 10)}px`;
+    
+    // Close when clicking outside
+    setTimeout(() => {
+      document.addEventListener('click', () => {
+        menu.style.display = 'none';
+      }, { once: true });
+    }, 10);
+  }
+
+  contextMenuAction(action) {
+    const menu = document.getElementById('context-menu');
+    menu.style.display = 'none';
+    
+    if (!this.contextMenuTarget) return;
+    
+    const path = this.contextMenuTarget.getAttribute('data-path');
+    const type = this.contextMenuTarget.getAttribute('data-type');
+    
+    switch(action) {
+      case 'open':
+        type === 'folder' ? this.loadFileTree(path) : this.openFileForEditing(path);
+        break;
+      case 'rename':
+        this.renameFile(path);
+        break;
+      case 'delete':
+        this.deleteFile(path);
+        break;
+      case 'download':
+        type === 'file' ? this.downloadFile(path) : this.showNotification('Cannot download folders', 'warning');
+        break;
+      case 'copy-path':
+        this.copyToClipboard(path);
+        break;
+    }
+  }
+
+  // Add this to your setupEventListeners()
+  setupContextMenu() {
+    document.addEventListener('contextmenu', (e) => {
+      if (e.target.closest('[data-path]')) {
+        this.showContextMenu(e, e.target.closest('[data-path]'));
+      }
+    }, true);
+  }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+  window.appState = new AppState();
+  window.appState.init();
+});
+</script>
+
+<style>
+.context-menu {
+  background: #2d3748;
+  border: 1px solid #4a5568;
+  border-radius: 4px;
+  z-index: 1000;
+  min-width: 150px;
+}
+
+.context-menu-item {
+  padding: 8px 12px;
+  color: white;
+  cursor: pointer;
+}
+
+.context-menu-item:hover {
+  background: #4a5568;
+}
+</style>
 </body>
 </html>

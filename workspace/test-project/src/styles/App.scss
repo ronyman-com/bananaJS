@@ -1,0 +1,31 @@
+
+@primary-color: #3498db;
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: $primary-color;
+  padding: 20px;
+
+  &.banana-theme {
+    @apply bg-banana-primary text-banana-dark;
+  }
+}
+
+h1 {
+  color: white;
+  @apply text-4xl font-bold;
+}
+
+
+.btn-banana {
+  @apply px-4 py-2 rounded-lg;
+  background-color: $primary-color;
+  
+  &:hover {
+    @apply bg-banana-dark text-white;
+  }
+}

@@ -22,6 +22,20 @@ const { spawn } = require('node-pty');
 const server = http.createServer(app);
 
 
+
+
+
+
+/// check API health
+app.get('/api/health', (req, res) => res.sendStatus(200));
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:5000/dashboard.html');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+});
+
 ////define create file and folder
 
 const upload = multer({
@@ -365,36 +379,22 @@ app.get('/api/status', (req, res) => {
 });
 
 // In your server routes
+// Node.js Express example
 app.get('/api/files', async (req, res) => {
-    try {
-      const { directory = '' } = req.query;
-      const fullPath = path.join(process.cwd(), '/workspace', directory);
-      
-      // Verify the path is within allowed directory
-      if (!fullPath.startsWith(path.join(process.cwd(), ''))) {
-        return res.status(400).json({ error: 'Access denied' });
-      }
+  const requestedDir = req.query.directory || 'workspace';
+  const safePath = path.join('workspace', requestedDir.replace(/^workspace[\/\\]?/, ''));
   
-      // Read directory contents
-      const items = await fs.readdir(fullPath);
-      const files = await Promise.all(items.map(async (item) => {
-        const itemPath = path.join(fullPath, item);
-        const stats = await fs.stat(itemPath);
-        
-        return {
-          name: item,
-          path: path.relative(path.join(process.cwd(), '/workspace'), itemPath),
-          isDirectory: stats.isDirectory(),
-          size: stats.isFile() ? stats.size : 0,
-          modified: stats.mtime
-        };
-      }));
-  
-      res.json(files);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
+  try {
+    const files = await fs.readdir(safePath, { withFileTypes: true });
+    res.json(files.map(dirent => ({
+      name: dirent.name,
+      isDirectory: dirent.isDirectory(),
+      size: dirent.isFile() ? fs.statSync(path.join(safePath, dirent.name)).size : 0
+    })));
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
 
 app.post('/api/create-project', express.json(), async (req, res) => {
