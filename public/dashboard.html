@@ -1003,32 +1003,73 @@
           </li>
         `;
       }
+//Create Folder
+async createNewFolder() {
+    const folderName = document.getElementById('folderName').value.trim();
+    
+    if (!folderName) {
+        this.showNotification('Please enter a folder name', 'error');
+        return;
+    }
 
-      async createNewFile() {
-        const fileName = document.getElementById('fileName').value.trim();
-        const template = document.getElementById('fileTemplate').value;
-        const customContent = document.getElementById('fileCustomContent').value || '';
-
-        if (!fileName) {
-          this.showNotification('Please enter a file name', 'error');
-          return;
-        }
-
-        try {
-          const response = await fetch('/api/create-file', {
+    try {
+        const response = await fetch('/api/create-folder', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'x-current-dir': this.currentDirectory || ''
+            },
             body: JSON.stringify({
-              path: this.currentDirectory || 'workspace',
-              name: fileName,
-              template: template,
-              content: customContent
+                name: folderName
             })
-          });
+        });
 
-          const result = await response.json();
+        const result = await response.json();
 
-          if (response.ok) {
+        if (response.ok) {
+            this.showNotification('Folder created successfully', 'success');
+            this.closeModal('createFolderModal');
+            this.refreshFileTree();
+        } else {
+            throw new Error(result.error || 'Failed to create folder');
+        }
+    } catch (error) {
+        this.showNotification(`Error: ${error.message}`, 'error');
+    }
+}
+
+//
+      async createNewFile() {
+    const fileName = document.getElementById('fileName').value.trim();
+    const template = document.getElementById('fileTemplate').value;
+    const customContent = document.getElementById('fileCustomContent').value || '';
+
+    if (!fileName) {
+        this.showNotification('Please enter a file name', 'error');
+        return;
+    }
+
+    try {
+        // Prepare headers including current directory
+        const headers = {
+            'Content-Type': 'application/json',
+            'x-current-dir': this.currentDirectory || '' // Add current directory to headers
+        };
+
+        const response = await fetch('/api/create-file', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+                directory: this.currentDirectory || '', // Send as directory parameter
+                name: fileName,
+                template: template,
+                content: customContent
+            })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
             this.showNotification('File created successfully', 'success');
             this.closeModal('createFileModal');
             this.refreshFileTree();
@@ -1036,50 +1077,18 @@
             // Open the file for editing if it's a text file
             const textFileExtensions = ['.js', '.jsx', '.ts', '.tsx', '.html', '.css', '.json', '.txt', '.md', '.vue'];
             if (textFileExtensions.some(ext => fileName.toLowerCase().endsWith(ext))) {
-              const filePath = this.currentDirectory
-                ? `${this.currentDirectory}/${fileName}`
-                : fileName;
-              setTimeout(() => this.openFileForEditing(filePath), 100);
+                const filePath = this.currentDirectory
+                    ? `${this.currentDirectory}/${fileName}`
+                    : fileName;
+                setTimeout(() => this.openFileForEditing(filePath), 100);
             }
-          } else {
+        } else {
             throw new Error(result.error || 'Failed to create file');
-          }
-        } catch (error) {
-          this.showNotification(`Error: ${error.message}`, 'error');
         }
-      }
-
-      async createNewFolder() {
-        const folderName = document.getElementById('folderName').value.trim();
-
-        if (!folderName) {
-          this.showNotification('Please enter a folder name', 'error');
-          return;
-        }
-
-        try {
-          const response = await fetch('/api/create-folder', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              path: this.currentDirectory || 'workspace',
-              name: folderName
-            })
-          });
-
-          const result = await response.json();
-
-          if (response.ok) {
-            this.showNotification('Folder created successfully', 'success');
-            this.closeModal('createFolderModal');
-            this.refreshFileTree();
-          } else {
-            throw new Error(result.error || 'Failed to create folder');
-          }
-        } catch (error) {
-          this.showNotification(`Error: ${error.message}`, 'error');
-        }
-      }
+    } catch (error) {
+        this.showNotification(`Error: ${error.message}`, 'error');
+    }
+}
 
       async renameFile(path) {
         const newName = prompt('Enter new name:', path.split('/').pop());
@@ -1801,85 +1810,83 @@ contextMenuAction(action) {
       }
 
       async startUpload() {
-        const fileInput = document.getElementById('file-upload');
-        if (!fileInput?.files?.length) {
-          this.showNotification('Please select files to upload', 'error');
-          return;
-        }
+          const fileInput = document.getElementById('file-upload');
+          if (!fileInput?.files?.length) {
+              this.showNotification('Please select files to upload', 'error');
+              return;
+          }
 
-        const progress = document.getElementById('upload-progress');
-        const progressBar = document.getElementById('upload-progress-bar');
-        const status = document.getElementById('upload-status');
-        const uploadButton = document.getElementById('start-upload-button');
+          const progress = document.getElementById('upload-progress');
+          const progressBar = document.getElementById('upload-progress-bar');
+          const status = document.getElementById('upload-status');
+          const uploadButton = document.getElementById('start-upload-button');
 
-        progress.classList.remove('hidden');
-        uploadButton.disabled = true;
-        status.textContent = 'Starting upload...';
-        progressBar.style.width = '0%';
+          progress.classList.remove('hidden');
+          uploadButton.disabled = true;
+          status.textContent = 'Starting upload...';
+          progressBar.style.width = '0%';
 
-        const formData = new FormData();
-        for (let i = 0; i < fileInput.files.length; i++) {
-          formData.append('files', fileInput.files[i]);
-        }
-        
-        formData.append('directory', this.currentDirectory || 'workspace');
+          const formData = new FormData();
+          for (let i = 0; i < fileInput.files.length; i++) {
+              formData.append('files', fileInput.files[i]);
+          }
 
-        try {
-          const xhr = new XMLHttpRequest();
+          try {
+              const xhr = new XMLHttpRequest();
+              xhr.open('POST', '/api/upload', true);
+              
+              // Add current directory header
+              xhr.setRequestHeader('x-current-dir', this.currentDirectory || '');
 
-          xhr.open('POST', '/api/upload', true);
+              xhr.upload.onprogress = (event) => {
+                  if (event.lengthComputable) {
+                      const percentComplete = (event.loaded / event.total) * 100;
+                      progressBar.style.width = `${percentComplete}%`;
+                      status.textContent = `Uploading: ${percentComplete.toFixed(0)}%`;
+                  }
+              };
 
-          xhr.upload.onprogress = (event) => {
-            if (event.lengthComputable) {
-              const percentComplete = (event.loaded / event.total) * 100;
-              progressBar.style.width = `${percentComplete}%`;
-              status.textContent = `Uploading: ${percentComplete.toFixed(0)}%`;
-            }
-          };
+              xhr.onload = () => {
+                  uploadButton.disabled = false;
+                  progress.classList.add('hidden');
 
-          xhr.onload = () => {
-            uploadButton.disabled = false;
-            progress.classList.add('hidden');
+                  if (xhr.status >= 200 && xhr.status < 300) {
+                      try {
+                          const result = JSON.parse(xhr.responseText);
+                          this.showNotification(`${result.files.length} files uploaded successfully`, 'success');
+                          this.closeModal('uploadModal');
+                          this.refreshFileTree();
+                      } catch (e) {
+                          console.error('Upload success, but failed to parse response:', e);
+                          this.showNotification('Upload successful, but response error', 'warning');
+                          this.closeModal('uploadModal');
+                          this.refreshFileTree();
+                      }
+                  } else {
+                      let errorMessage = 'Upload failed';
+                      try {
+                          const errorResult = JSON.parse(xhr.responseText);
+                          errorMessage = errorResult.error || errorMessage;
+                      } catch (e) {}
+                      console.error('Upload error:', xhr.status, xhr.responseText);
+                      this.showNotification(`Upload failed: ${errorMessage}`, 'error');
+                  }
+              };
 
-            if (xhr.status >= 200 && xhr.status < 300) {
-              try {
-                const result = JSON.parse(xhr.responseText);
-                this.showNotification(`${result.files.length} files uploaded successfully`, 'success');
-                this.closeModal('uploadModal');
-                this.refreshFileTree();
-              } catch (e) {
-                 console.error('Upload success, but failed to parse response:', e);
-                 this.showNotification('Upload successful, but response error', 'warning');
-                 this.closeModal('uploadModal');
-                 this.refreshFileTree();
-              }
-            } else {
-              let errorMessage = 'Upload failed';
-              try {
-                 const errorResult = JSON.parse(xhr.responseText);
-                 errorMessage = errorResult.error || errorMessage;
-              } catch (e) {
-              }
-              console.error('Upload error:', xhr.status, xhr.responseText);
-              this.showNotification(`Upload failed: ${errorMessage}`, 'error');
-            }
-          };
+              xhr.onerror = () => {
+                  uploadButton.disabled = false;
+                  progress.classList.add('hidden');
+                  console.error('Upload network error');
+                  this.showNotification('Upload failed: Network error', 'error');
+              };
 
-          xhr.onerror = () => {
-             uploadButton.disabled = false;
-             progress.classList.add('hidden');
-             console.error('Upload network error');
-             this.showNotification('Upload failed: Network error', 'error');
-          };
-
-          xhr.send(formData);
-
-        } catch (error) {
-          console.error('Upload initiation error:', error);
-          this.showNotification(`Upload failed: ${error.message}`, 'error');
-          uploadButton.disabled = false;
-          progress.classList.add('hidden');
-        }
+              xhr.send(formData);
+          } catch (error) {
+              console.error('Upload initiation error:', error);
+              this.showNotification(`Upload failed: ${error.message}`, 'error');
+              uploadButton.disabled = false;
+              progress.classList.add('hidden');
+          }
       }
     }
 

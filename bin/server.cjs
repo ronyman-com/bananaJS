@@ -5,17 +5,173 @@ const WebSocket = require('ws');
 const chokidar = require('chokidar');
 const http = require('http');
 const os = require('os');
+const multer = require('multer');
 const history = require('connect-history-api-fallback');
 const createWebSocketServer = require('./websocket.cjs');
+const createProject = require('../lib/create-project.cjs');
+//const createfile = require('../lib/create-file.cjs');
+//const createFolder = require('../lib/create-folder.cjs');
 
 const app = express();
 const port = process.env.PORT || 5000;
 const host = process.env.HOST || 'localhost';
 const publicDir = process.env.PUBLIC_DIR || path.join(process.cwd(), 'public');
 const shouldOpen = process.env.OPEN_BROWSER === 'true';
-
+const { spawn } = require('node-pty');
 // Create HTTP server
 const server = http.createServer(app);
+
+
+////define create file and folder
+
+const upload = multer({
+    storage: multer.diskStorage({
+      destination: (req, file, cb) => {
+        const uploadDir = req.headers['x-current-dir']
+          ? path.join(process.cwd(), 'workspace', req.headers['x-current-dir'])
+          : path.join(process.cwd(), 'workspace');
+        
+        fs.ensureDirSync(uploadDir);
+        cb(null, uploadDir);
+      },
+      filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`);
+      }
+    })
+  });
+// Add this near your other middleware
+let currentDirectory = path.join(process.cwd(), 'workspace');
+
+app.use((req, res, next) => {
+  // Get current directory from header or default to workspace root
+  req.currentDir = req.headers['x-current-dir'] 
+    ? path.join(process.cwd(), 'workspace', req.headers['x-current-dir'])
+    : currentDirectory;
+  
+  // Ensure we stay within workspace
+  if (!req.currentDir.startsWith(path.join(process.cwd(), 'workspace'))) {
+    req.currentDir = path.join(process.cwd(), 'workspace');
+  }
+  next();
+});
+
+// File operations implementation
+const createFile = async (filePath, content) => {
+  await fs.ensureDir(path.dirname(filePath)); // Ensure parent directory exists
+  await fs.writeFile(filePath, content);
+  return { 
+    success: true, 
+    path: path.relative(process.cwd(), filePath),
+    message: `File created successfully at ${filePath}`
+  };
+};
+
+const createFolder = async (folderPath) => {
+  await fs.ensureDir(folderPath);
+  return {
+    success: true,
+    path: path.relative(process.cwd(), folderPath),
+    message: `Folder created successfully at ${folderPath}`
+  };
+};
+// File operations implementation
+// Create File Endpoint
+// Create File Endpoint - now with directory validation
+app.post('/api/create-file', express.json(), async (req, res) => {
+  try {
+    const { directory = '', name, content = '' } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({ success: false, error: 'File name is required' });
+    }
+
+    // Use both middleware directory and endpoint directory
+    const baseDir = req.currentDir || path.join(process.cwd(), 'workspace');
+    const safeDirectory = path.normalize(directory).replace(/^(\.\.(\/|\\|$))+/g, '');
+    const fullPath = path.join(baseDir, safeDirectory, name);
+    
+    // Verify path safety
+    const workspacePath = path.join(process.cwd(), 'workspace');
+    if (!fullPath.startsWith(workspacePath)) {
+      return res.status(403).json({ 
+        success: false, 
+        error: 'Invalid directory path - outside workspace boundary' 
+      });
+    }
+
+    const result = await createFile(fullPath, content);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ 
+      success: false,
+      error: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+  }
+});
+
+
+// Create Folder
+app.post('/api/create-folder', express.json(), async (req, res) => {
+  try {
+    const { directory = '', name } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({ success: false, error: 'Folder name is required' });
+    }
+
+    // Use header-based directory if available, otherwise fall back to body
+    const currentDir = req.headers['x-current-dir'] || directory;
+    const safeDirectory = path.normalize(currentDir).replace(/^(\.\.(\/|\\|$))+/g, '');
+    const fullPath = path.join(process.cwd(), 'workspace', safeDirectory, name);
+    
+    // Verify we're still within workspace
+    const workspacePath = path.join(process.cwd(), 'workspace');
+    if (!fullPath.startsWith(workspacePath)) {
+      return res.status(403).json({ success: false, error: 'Invalid directory path' });
+    }
+
+    const result = await createFolder(fullPath);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ 
+      success: false,
+      error: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+  }
+});
+
+// File Upload Endpoint - using Multer middleware
+app.post('/api/upload', upload.array('files'), async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ success: false, error: 'No files uploaded' });
+    }
+
+    const results = req.files.map(file => ({
+      originalName: file.originalname,
+      savedName: file.filename,
+      path: path.relative(path.join(process.cwd(), 'workspace'), file.path),
+      size: file.size,
+      mimetype: file.mimetype
+    }));
+
+    res.json({ 
+      success: true, 
+      message: `${req.files.length} file(s) uploaded successfully`,
+      files: results
+    });
+  } catch (err) {
+    res.status(500).json({ 
+      success: false,
+      error: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+  }
+});
+////
+
 
 // --- Logging Setup ---
 const logger = {
@@ -240,7 +396,6 @@ app.get('/api/files', async (req, res) => {
     }
   });
 
-const createProject = require('../lib/create-project.cjs');
 
 app.post('/api/create-project', express.json(), async (req, res) => {
     try {
@@ -323,29 +478,116 @@ app.post('/api/create-project', express.json(), async (req, res) => {
 
 
 
-app.post('/api/create-file', async (req, res) => {
+// Replace the existing endpoints with these:
+
+app.post('/api/create-app', express.json(), async (req, res) => {
     try {
-      const { path: filePath, name, template = 'empty', content = '' } = req.body;
-      const fullPath = path.join(process.cwd(), filePath, name);
-      const result = await createFile(fullPath, { template, content });
-      res.json(result);
+      const { appName, template = 'default' } = req.body;
+      const workspacePath = path.join(process.cwd(), 'workspace');
+      
+      // Ensure workspace exists
+      await fs.ensureDir(workspacePath);
+      
+      const result = await createApp(appName, template, { parentPath: workspacePath });
+      res.json({
+        success: true,
+        path: path.relative(process.cwd(), result.appDir)
+      });
     } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
-  });
-  
-  app.post('/api/create-folder', async (req, res) => {
-    try {
-      const { path: folderPath, name } = req.body;
-      const fullPath = path.join(process.cwd(), folderPath, name);
-      const result = await createFolder(fullPath);
-      res.json(result);
-    } catch (err) {
-      res.status(400).json({ error: err.message });
+      res.status(500).json({ 
+        success: false,
+        error: err.message
+      });
     }
   });
   
 
+//////update for browser
+  // Create File Endpoint - now with directory validation
+app.post('/api/create-file', express.json(), async (req, res) => {
+    try {
+      const { directory = '', name, content = '' } = req.body;
+      
+      if (!name) {
+        return res.status(400).json({ success: false, error: 'File name is required' });
+      }
+  
+      const safeDirectory = directory.replace(/\.\./g, ''); // Prevent directory traversal
+      const fullPath = path.join(process.cwd(), 'workspace', safeDirectory, name);
+      
+      // Verify we're still within workspace
+      if (!fullPath.startsWith(path.join(process.cwd(), 'workspace'))) {
+        return res.status(403).json({ success: false, error: 'Invalid directory path' });
+      }
+  
+      const result = await createFile(fullPath, content);
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ 
+        success: false,
+        error: err.message,
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      });
+    }
+  });
+  
+  // Create Folder Endpoint - with current directory enforcement
+  app.post('/api/create-folder', express.json(), async (req, res) => {
+    try {
+      const { directory = '', name } = req.body;
+      
+      if (!name) {
+        return res.status(400).json({ success: false, error: 'Folder name is required' });
+      }
+  
+      const safeDirectory = directory.replace(/\.\./g, ''); // Prevent directory traversal
+      const fullPath = path.join(process.cwd(), 'workspace', safeDirectory, name);
+      
+      // Verify we're still within workspace
+      if (!fullPath.startsWith(path.join(process.cwd(), 'workspace'))) {
+        return res.status(403).json({ success: false, error: 'Invalid directory path' });
+      }
+  
+      const result = await createFolder(fullPath);
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ 
+        success: false,
+        error: err.message,
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      });
+    }
+  });
+  
+  // File Upload Endpoint - using Multer middleware
+  app.post('/api/upload', upload.array('files'), async (req, res) => {
+    try {
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ success: false, error: 'No files uploaded' });
+      }
+  
+      const results = req.files.map(file => ({
+        originalName: file.originalname,
+        savedName: file.filename,
+        path: path.relative(path.join(process.cwd(), 'workspace'), file.path),
+        size: file.size,
+        mimetype: file.mimetype
+      }));
+  
+      res.json({ 
+        success: true, 
+        message: `${req.files.length} file(s) uploaded successfully`,
+        files: results
+      });
+    } catch (err) {
+      res.status(500).json({ 
+        success: false,
+        error: err.message,
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      });
+    }
+  });
+  ///////////////
 
 
 // --- WebSocket and HMR ---
@@ -459,7 +701,7 @@ app.get('*', (req, res) => {
 
 //----
 
-const { spawn } = require('node-pty');
+
 
 // Add to your WebSocket server setup
 wss.on('connection', (ws) => {
